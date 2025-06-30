@@ -31,6 +31,11 @@ const RegisterScreen = ({ navigation }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [loading, setLoading] = useState(false);
+    const formatDate = (date) => {
+        return `${date.getFullYear()}-${(date.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    };
 
     const RegisterSchema = Yup.object().shape({
         firstName: Yup.string().required('First name is required.'),
@@ -77,7 +82,7 @@ const RegisterScreen = ({ navigation }) => {
                                     data: {
                                     first_name: values.firstName,
                                     last_name: values.lastName,
-                                    dob: values.dob.toISOString().split('T')[0],
+                                    dob: formatDate(values.dob),
                                     gender: values.gender,
                                     country: values.country,
                                     },
@@ -103,7 +108,7 @@ const RegisterScreen = ({ navigation }) => {
                                     email: userEmail,
                                     first_name: values.firstName,
                                     last_name: values.lastName,
-                                    dob: values.dob.toISOString().split('T')[0],
+                                    dob: formatDate(values.dob),
                                     gender: values.gender,
                                     country: values.country,
                                     },
@@ -117,7 +122,7 @@ const RegisterScreen = ({ navigation }) => {
                                 }
 
                                 // alert('Verification email sent.');
-                                navigation.navigate('Login');
+                                // navigation.navigate('Login');
                             } catch (e) {
                                 console.error('Unexpected signup error:', e.message);
                             } finally {
