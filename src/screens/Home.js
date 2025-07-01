@@ -40,7 +40,7 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <View style={{ padding: 20, marginTop: 100 }}>
-            <Text style={{ fontSize: 24 }}>Welcome Home</Text>
+            <Text style={{ fontSize: 24 }}>Welcome to WealthWise</Text>
             {profile ? (
                 <View style={{ padding: 20 }}>
                     <Text style={styles.title}>Welcome, {profile.first_name} {profile.last_name} 👋</Text>
