@@ -65,4 +65,4 @@ const FontWeights = {
   extraBold: '800',
 };
 
-export { Colors, Spacing, FontSizes, Fonts };
+export { Colors, Spacing, FontSizes, Fonts, FontWeights };

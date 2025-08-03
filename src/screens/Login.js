@@ -12,7 +12,7 @@ const LoginScreen = ({ navigation }) => {
 
     const handleLogin = async () => {
         setLoading(true);
-        setErrorMessage(null); 
+        setErrorMessage(null);
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
             setErrorMessage(error.message);  // Show error message
