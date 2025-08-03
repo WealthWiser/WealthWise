@@ -6,10 +6,11 @@ import { ActivityIndicator, View, Text } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../redux/slices/userSlice';
 
-import HomeScreen from '../screens/Home';
+import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/Login';
-import ProfileScreen from '../screens/Profile';
+import ProfileScreen from '../screens/ProfileScreen';
 import RegisterScreen from '../screens/Register';
+import OnboardingScreen from '../screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,6 +58,7 @@ const AppNavigator = () => {
                     <>
                         <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen name="Profile" component={ProfileScreen} />
+                        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
                         {/* Add other protected screens */}
                     </>
                 ) : (
