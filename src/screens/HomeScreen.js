@@ -5,19 +5,21 @@ import { setUserData } from '../redux/slices/userSlice';
 import { setTransactions } from '../redux/slices/transactionSlice';
 import { supabase } from '../lib/supabase';
 
-
 const HomeScreen = ({ navigation }) => {
     const [profile, setProfile] = useState(null);
     const dispatch = useDispatch();
+
     useEffect(() => {
         const fetchUserDetails = async () => {
             const { data: { user }} = await supabase.auth.getUser();
-            if(!user) {return};
+            if (!user) return;
+
             const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+                .from('users')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
             if (error) {
                 console.log('Fetch profile error:', error.message);
             } else {
@@ -38,6 +40,10 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    const goToOnboarding = () => {
+        navigation.navigate('Onboarding');
+    };
+
     return (
         <View style={{ padding: 20, marginTop: 100 }}>
             <Text style={{ fontSize: 24 }}>Welcome Home</Text>
@@ -54,9 +60,15 @@ const HomeScreen = ({ navigation }) => {
             )}
 
             <Button title="Logout" onPress={handleLogout} />
+
+            {/* Button to navigate to onboarding */}
+            <View style={{ marginTop: 20 }}>
+                <Button title="Go to Onboarding" onPress={goToOnboarding} />
+            </View>
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     title: {
         fontSize: 22,
@@ -68,4 +80,5 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
 });
+
 export default HomeScreen;
