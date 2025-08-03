@@ -5,14 +5,13 @@ import { supabase } from '../lib/supabase';
 import { ActivityIndicator, View, Text } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../redux/slices/userSlice';
-
-import HomeScreen from '../screens/HomeScreen';
+import BottomTabNavigator from './BottomTabNavigator'
 import LoginScreen from '../screens/Login';
-import ProfileScreen from '../screens/ProfileScreen';
 import RegisterScreen from '../screens/Register';
 import OnboardingScreen from '../screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
+
 
 const AppNavigator = () => {
     const [sessionChecked, setSessionChecked] = useState(false);
@@ -51,25 +50,25 @@ const AppNavigator = () => {
             </View>
         );
     }
+
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {session ? (
                     <>
-                        <Stack.Screen name="Home" component={HomeScreen} />
-                        <Stack.Screen name="Profile" component={ProfileScreen} />
-                        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-                        {/* Add other protected screens */}
+                        <Stack.Screen name="HomeTabs" component={BottomTabNavigator} />
+                        {/* Add other screens that need to be stacked above tabs */}
                     </>
                 ) : (
                     <>
+                        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Register" component={RegisterScreen} />
                     </>
                 )}
             </Stack.Navigator>
         </NavigationContainer>
-    )
+    );
 };
 
 export default AppNavigator;
