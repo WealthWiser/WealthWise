@@ -51,9 +51,9 @@ const FontSizes = {
 };
 
 const Fonts = {
-  primary: 'Inter',
-  heading: 'Montserrat',
-  fallback: 'Roboto',
+  primary: 'Lato-Regular',
+  heading: 'Roboto-Bold',
+  fallback: 'Lato-BlackItalic',
 };
 
 const FontWeights = {
