@@ -51,9 +51,18 @@ const FontSizes = {
 };
 
 const Fonts = {
-  primary: 'Inter',
-  heading: 'Montserrat',
-  fallback: 'Roboto',
+  primary: 'Lato-Regular',
+  heading: 'Roboto-Bold',
+  fallback: 'Lato-BlackItalic',
+  stencil: 'AllertaStencil-Regular',
+};
+
+const FontWeights = {
+  regular: '400',
+  medium: '500',
+  semiBold: '600',
+  bold: '700',
+  extraBold: '800',
 };
 
 export { Colors, Spacing, FontSizes, Fonts };

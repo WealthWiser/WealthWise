@@ -16,6 +16,7 @@ export default function App() {
   return (
     <ReduxProvider store={store}>
       <PaperProvider theme={theme}>
+        <StatusBar barStyle="dark-content" backgroundColor={Colors.neutralBackground} />
         <AppNavigator />
       </PaperProvider>
     </ReduxProvider>
