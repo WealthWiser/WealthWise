@@ -18,17 +18,17 @@ const onboardingData = [
   {
     title: 'Track Your Spending',
     description: 'Monitor expenses easily and stay in control of your finances.',
-    image: require('../assets/illustration1.png'),
+    image: require('../../assets/illustration1.png'),
   },
   {
     title: 'Set Budgets & Goals',
     description: 'Create budgets and set financial goals to reach your dreams.',
-    image: require('../assets/illustration2.png'),
+    image: require('../../assets/illustration2.png'),
   },
   {
     title: 'Get Smart Investment Advice',
     description: 'Receive personalized recommendations to grow your wealth.',
-    image: require('../assets/illustration3.png'),
+    image: require('../../assets/illustration3.png'),
   },
 ];
 
@@ -81,7 +81,7 @@ const OnboardingScreen = () => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../utils/wwLogo.png')}
+        source={require('../../assets/wwLogo.png')}
         style={styles.topLogo}
         resizeMode="contain"
       />
