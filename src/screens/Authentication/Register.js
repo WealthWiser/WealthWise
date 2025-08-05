@@ -22,9 +22,9 @@ import moment from 'moment'; // Optional: for clean date formatting
 import { Dropdown } from 'react-native-paper-dropdown';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {FontSizes, Colors, FontWeights, Spacing, Fonts } from '../utils/theme';
+import {FontSizes, Colors, FontWeights, Spacing, Fonts } from '../../utils/theme';
 
 const RegisterScreen = ({ navigation }) => {
     const [showGenderDropdown, setShowGenderDropdown] = useState(false);

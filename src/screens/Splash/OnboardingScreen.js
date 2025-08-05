@@ -10,7 +10,7 @@ import {
   Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Colors, Spacing, FontSizes, Fonts, FontWeights } from '../utils/theme';
+import { Colors, Spacing, FontSizes, Fonts, FontWeights } from '../../utils/theme';
 
 const { width, height } = Dimensions.get('window');
 
