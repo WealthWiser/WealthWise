@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator, StyleSheet, StatusBar } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { setUserData } from '../redux/slices/userSlice';
-import { setTransactions } from '../redux/slices/transactionSlice';
-import { supabase } from '../lib/supabase';
+import { setUserData } from '../../redux/slices/userSlice';
+import { setTransactions } from '../../redux/slices/transactionSlice';
+import { supabase } from '../../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Fonts, FontSizes, FontWeights, Spacing } from '../utils/theme';
+import { Colors, Fonts, FontSizes, FontWeights, Spacing } from '../../utils/theme';
 const ProfileScreen = () => {
     const [profile, setProfile] = useState(null);
     const dispatch = useDispatch();

@@ -6,9 +6,9 @@ import { ActivityIndicator, View, Text } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../redux/slices/userSlice';
 import BottomTabNavigator from './BottomTabNavigator'
-import LoginScreen from '../screens/Login';
-import RegisterScreen from '../screens/Register';
-import OnboardingScreen from '../screens/OnboardingScreen';
+import LoginScreen from '../screens/Authentication/Login';
+import RegisterScreen from '../screens/Authentication/Register';
+import OnboardingScreen from '../screens/Splash/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 

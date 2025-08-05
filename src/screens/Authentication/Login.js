@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { TextInput, Button, Text} from 'react-native-paper';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 const LoginScreen = ({ navigation }) => {

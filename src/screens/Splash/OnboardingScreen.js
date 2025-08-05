@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,11 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  FlatList,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Colors, Spacing, FontSizes, Fonts, FontWeights } from '../utils/theme';
+import { Colors, Spacing, FontSizes, Fonts, FontWeights } from '../../utils/theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,58 +33,100 @@ const onboardingData = [
 ];
 
 const OnboardingScreen = () => {
-  const [step, setStep] = useState(0);
   const navigation = useNavigation();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef(null);
+
+  // Animated values for dots
+  const scales = useRef(onboardingData.map(() => new Animated.Value(1))).current;
+  const opacities = useRef(onboardingData.map(() => new Animated.Value(0.3))).current;
+
+  useEffect(() => {
+    scales.forEach((scale, index) => {
+      Animated.spring(scale, {
+        toValue: index === currentIndex ? 1.3 : 1,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    opacities.forEach((opacity, index) => {
+      Animated.timing(opacity, {
+        toValue: index === currentIndex ? 1 : 0.3,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [currentIndex]);
 
   const handleNext = () => {
-    if (step < onboardingData.length - 1) {
-      setStep(step + 1);
+    if (currentIndex < onboardingData.length - 1) {
+      flatListRef.current.scrollToIndex({ index: currentIndex + 1 });
     }
   };
 
   const handleSkip = () => {
-    setStep(onboardingData.length - 1);
+    flatListRef.current.scrollToIndex({ index: onboardingData.length - 1 });
   };
 
   const handleGetStarted = () => {
     navigation.navigate('Login');
   };
 
+  const handleViewableItemsChanged = useRef(({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index);
+    }
+  }).current;
+
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
-        <Image
-          source={require('../utils/wwLogo.png')}
-          style={styles.topLogo}
-          resizeMode="contain"
-        />
+      <Image
+        source={require('../utils/wwLogo.png')}
+        style={styles.topLogo}
+        resizeMode="contain"
+      />
 
-        <Image
-          source={onboardingData[step].image}
-          style={styles.image}
-          resizeMode="contain"
-        />
+      <FlatList
+        data={onboardingData}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.slide}>
+            <Image source={item.image} style={styles.image} resizeMode="contain" />
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.text}>{item.description}</Text>
+          </View>
+        )}
+        ref={flatListRef}
+        onViewableItemsChanged={handleViewableItemsChanged}
+        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+      />
 
-        <Text style={styles.title}>{onboardingData[step].title}</Text>
-        <Text style={styles.text}>{onboardingData[step].description}</Text>
-
-        {/* Dots Indicator */}
-        <View style={styles.dotsContainer}>
-          {onboardingData.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                index === step ? styles.activeDot : styles.inactiveDot,
-              ]}
-            />
-          ))}
-        </View>
+      {/* Animated Dots Indicator */}
+      <View style={styles.dotsContainer}>
+        {onboardingData.map((_, index) => (
+          <Animated.View
+            key={index}
+            style={[
+              styles.dot,
+              {
+                transform: [{ scale: scales[index] }],
+                opacity: opacities[index],
+                backgroundColor: Colors.primary,
+                elevation: index === currentIndex ? 6 : 2,
+                shadowOpacity: index === currentIndex ? 0.7 : 0.1,
+                shadowRadius: index === currentIndex ? 6 : 2,
+              },
+            ]}
+          />
+        ))}
       </View>
 
       {/* Navigation Buttons */}
       <View style={styles.bottomContainer}>
-        {step < onboardingData.length - 1 ? (
+        {currentIndex < onboardingData.length - 1 ? (
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
               <Text style={styles.skipButtonText}>Skip</Text>
@@ -108,20 +152,20 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutralBackground,
     padding: Spacing.lg,
   },
-  content: {
-    flex: 1,
+  topLogo: {
+    width: 80,
+    height: 80,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  slide: {
+    width: width - Spacing.lg * 2,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing.lg,
-  },
-  topLogo: {
-    width: 100,
-    height: 100,
-    marginBottom: Spacing.lg,
-    alignSelf: 'center',
+    paddingHorizontal: Spacing.md,
   },
   image: {
-    width: width * 0.8,
+    width: width * 0.75,
     height: height * 0.4,
     marginBottom: Spacing.lg,
   },
@@ -149,20 +193,16 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     marginHorizontal: 6,
-  },
-  activeDot: {
-    width: 14,
-    height: 14,
     backgroundColor: Colors.primary,
-    opacity: 1,
-  },
-  inactiveDot: {
-    backgroundColor: Colors.primary,
-    opacity: 0.3,
+    shadowColor: Colors.primary,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   bottomContainer: {
     paddingBottom: Spacing.lg,
@@ -181,14 +221,20 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: Spacing.xl + 4,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.xl + 16,
     borderRadius: 30,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+    alignItems: 'center',
   },
   fullButton: {
     backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    borderRadius: 30,
+    paddingVertical: 14,
+    borderRadius: 32,
     marginHorizontal: Spacing.md,
     alignItems: 'center',
   },
@@ -197,14 +243,15 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.primary,
     fontWeight: FontWeights.bold,
     color: '#fff',
+    letterSpacing: 1.2,
   },
   skipButtonText: {
     fontSize: FontSizes.lg,
     fontFamily: Fonts.primary,
     fontWeight: FontWeights.bold,
     color: Colors.blueDark,
+    letterSpacing: 1.2,
   },
 });
-
 
 export default OnboardingScreen;

@@ -22,9 +22,9 @@ import moment from 'moment'; // Optional: for clean date formatting
 import { Dropdown } from 'react-native-paper-dropdown';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {FontSizes, Colors, FontWeights, Spacing, Fonts } from '../utils/theme';
+import {FontSizes, Colors, FontWeights, Spacing, Fonts } from '../../utils/theme';
 
 const RegisterScreen = ({ navigation }) => {
     const [showGenderDropdown, setShowGenderDropdown] = useState(false);
@@ -52,7 +52,7 @@ const RegisterScreen = ({ navigation }) => {
         agree: Yup.boolean().oneOf([true], 'You must agree to the Terms of Service.'),
     });
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={80}>
                     <ScrollView
@@ -297,7 +297,7 @@ const RegisterScreen = ({ navigation }) => {
                     </ScrollView>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
-        </SafeAreaView>
+        </View>
 
     );
 };
