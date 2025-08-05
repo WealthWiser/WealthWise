@@ -5,6 +5,7 @@ import {MD3LightTheme as DefaultTheme, PaperProvider } from 'react-native-paper'
 import AppNavigator from './src/navigation/AppNavigator';
 import { StatusBar } from 'react-native';
 import { Colors } from './src/utils/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function App() {
   const theme = {
@@ -17,10 +18,12 @@ export default function App() {
 };
   return (
     <ReduxProvider store={store}>
-      <PaperProvider theme={theme}>
-        <StatusBar barStyle="dark-content" backgroundColor={Colors.neutralBackground} />
-        <AppNavigator />
-      </PaperProvider>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.neutralBackground }}>
+        <PaperProvider theme={theme}>
+          <StatusBar barStyle="dark-content" backgroundColor={Colors.neutralBackground} />
+          <AppNavigator />
+        </PaperProvider>
+      </SafeAreaView>
     </ReduxProvider>
   );
 }

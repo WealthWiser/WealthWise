@@ -52,7 +52,7 @@ const RegisterScreen = ({ navigation }) => {
         agree: Yup.boolean().oneOf([true], 'You must agree to the Terms of Service.'),
     });
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={80}>
                     <ScrollView
@@ -297,7 +297,7 @@ const RegisterScreen = ({ navigation }) => {
                     </ScrollView>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
-        </SafeAreaView>
+        </View>
 
     );
 };
