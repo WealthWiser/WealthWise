@@ -216,12 +216,19 @@ const transactions = [
         blurAmount={15}
         reducedTransparencyFallbackColor="white"
       />
-      <View style={styles.chatContent}>
-        <TouchableOpacity style={styles.closeButton} onPress={closeChat}>
-          <Text style={styles.closeText}>✕</Text>
-        </TouchableOpacity>
-        <ChatBot />
-      </View>
+     <View style={styles.chatContent}>
+        {/* Chat header row */}
+        <View style={styles.chatHeader}>
+          <Text style={styles.chatTitle}>WealthWise AI</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={closeChat}>
+            <Text style={styles.closeText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+          {/* ChatBot UI */}
+          <ChatBot />
+     </View>
+
     </Animated.View>
   </>
 )}
@@ -519,23 +526,46 @@ const styles = StyleSheet.create({
 modalBlur: {
   ...StyleSheet.absoluteFillObject,
 },
-chatbotContainer: {
-  width: '90%',
-  height: '80%',
-  backgroundColor: '#fff',
-  borderRadius: 20,
-  overflow: 'hidden',
-  padding: 10,
-},
-closeButton: {
-  alignSelf: 'flex-end',
-  padding: 10,
-},
-closeText: {
-  fontSize: 22,
-  fontWeight: 'bold',
+
+// Chatbot conatiners Heading and close button
+chatHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',  
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: 'rgba(255,255,255,0.2)',
+  backgroundColor: 'transparent',           
+  position: 'relative',
+  overflow: 'hidden', 
 },
 
+chatTitle: {
+  fontSize: 20,
+  fontWeight: 'bold', 
+  color: '#204be68b', 
+  letterSpacing: 0.7,        
+  textShadowColor: 'rgba(3, 3, 3, 0.15)', 
+  textShadowOffset: { width: 0, height: 1 },
+  textShadowRadius: 2,
+},
+
+closeButton: {
+  position: 'absolute',
+  right: 16,      
+  top: '95%',
+  transform: [{ translateY: -11 }], // vertical center tweak
+},
+
+closeText: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  color: '#e30707ff',
+  textShadowColor: 'rgba(0,0,0,0.2)',
+  textShadowOffset: { width: 0, height: 1 },
+  textShadowRadius: 1,
+},
 animatedChat: {
   position: 'absolute',
   bottom: 20,
