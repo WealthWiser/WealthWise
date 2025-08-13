@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Animated, Easing } from 'react-native';
 import {
   View,
@@ -8,10 +8,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
 import ChatBot from '../Chat/Chatbot'; 
+import { supabase } from '../../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,6 +21,35 @@ export default function HomeScreen({ navigation }) {
   const [showChatBot, setShowChatBot] = useState(false); 
     const animation = useRef(new Animated.Value(0)).current; // 0 = hidden, 1 = expanded
     const [chatVisible, setChatVisible] = useState(false);
+
+    // User ka name  yaha se aa raha hai
+const [profile, setProfile] = useState(null);
+const [loadingProfile, setLoadingProfile] = useState(true);
+
+useEffect(() => {
+  const fetchUserDetails = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoadingProfile(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.log('Fetch profile error:', error.message);
+    } else {
+      setProfile(data);
+    }
+    setLoadingProfile(false);
+  };
+
+  fetchUserDetails();
+}, []);
 
 const openChat = () => {
   setChatVisible(true);
@@ -33,7 +64,7 @@ const openChat = () => {
 const closeChat = () => {
   Animated.timing(animation, {
     toValue: 0,
-    duration: 400,
+    duration: 20,
     easing: Easing.in(Easing.circle),
     useNativeDriver: false,
   }).start(() => setChatVisible(false));
@@ -45,6 +76,19 @@ const transactions = [
   { id: 3, name: 'Cinema', category: 'Entertainment', amount: -15, icon: '🎬' },
 ];
 
+const getGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour >= 5 && hour < 12) {
+    return { text: "Good Morning"};
+  } else if (hour >= 12 && hour < 17) {
+    return { text: "Good Afternoon" };
+  } else {
+    return { text: "Good Evening"};
+  }
+};
+
+const greeting = getGreeting();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,7 +104,13 @@ const transactions = [
       showsVerticalScrollIndicator={false}>
         {/* Balance */}
         <View style={{ marginTop: 24, marginBottom: 16 }}>
-          <Text style={styles.greeting}>Good morning, Sarah</Text>
+         {loadingProfile ? (
+            <ActivityIndicator size="small" color="#155bb7ff" style={{ marginLeft: 10 }} />
+          ) : (
+            <Text style={styles.greeting}>
+              {greeting.text}, {profile?.first_name || 'Guest'}
+            </Text>
+          )}
           <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
             <Text style={styles.balance}>$2,345.67</Text>
             <Text style={styles.balanceChange}> ↑ +2.5%</Text>
@@ -542,13 +592,15 @@ chatHeader: {
 },
 
 chatTitle: {
-  fontSize: 20,
-  fontWeight: 'bold', 
-  color: '#204be68b', 
-  letterSpacing: 0.7,        
-  textShadowColor: 'rgba(3, 3, 3, 0.15)', 
-  textShadowOffset: { width: 0, height: 1 },
-  textShadowRadius: 2,
+  fontSize: 18,
+  fontWeight: 'bold',
+  fontFamily: 'Lato-Bold',
+  color: '#350c8dff',
+  letterSpacing: 0.5,
+  backgroundColor: 'rgba(223, 251, 255, 0.7)',
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 12,
 },
 
 closeButton: {

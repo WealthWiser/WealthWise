@@ -53,7 +53,7 @@ const AppNavigator = () => {
 
     return (
         <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Navigator screenOptions={{ headerShown: false, animation: 'none'}}>
                 {session ? (
                     <>
                         <Stack.Screen name="HomeTabs" component={BottomTabNavigator} />
