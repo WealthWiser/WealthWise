@@ -10,7 +10,7 @@ const Colors = {
   mint: '#C6F4D6',
 
   // Warm Neutrals
-  neutralBackground: '#f5f5f5',
+  neutralBackground: '#fff',
   beige: '#d7ccc8',
   brown: '#8d6e63',
 

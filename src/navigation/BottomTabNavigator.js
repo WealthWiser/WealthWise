@@ -1,43 +1,44 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Feather from "react-native-vector-icons/Feather";
 import HomeScreen from '../screens/Home/HomeScreen';
-import ProfileScreen from '../screens/Profile/ProfileScreen';
-import {Ionicons} from '@react-native-vector-icons/ionicons';
-import {Colors} from '../utils/theme';
+import BudgetScreen from '../screens/Budget/BudgetScreen';
+import SavingsGoalScreen from '../screens/Goals/SavingsGoalScreen';
+import InvestmentScreen from '../screens/Invest/InvestmentScreen'; 
 
 const Tab = createBottomTabNavigator();
 
-
-// Bottom tab navigator for authenticated users
 const BottomTabNavigator = () => {
-
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarShowLabel: true,
+        tabBarIcon: ({ color, size }) => {
           let iconName;
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
+          if (route.name === "Home") {
+            iconName = "home";
+          } else if (route.name === "Budget") {
+            iconName = "bar-chart";
+          } else if (route.name === "Goals") {
+            iconName = "target";
+          } else if (route.name === "Invest") {
+            iconName = "trending-up";
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Feather name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: Colors.blueDark, // iOS blue
-        tabBarInactiveTintColor: Colors.grayDark,
-        tabBarStyle:{
-          backgroundColor: Colors.neutralBackground,
-          borderTopColor: Colors.blueDark,
-        }
+        tabBarActiveTintColor: "#288cfa", // your theme primary
+        tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen}  />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Budget" component={BudgetScreen} />
+      <Tab.Screen name="Goals" component={SavingsGoalScreen} />
+      <Tab.Screen name="Invest" component={InvestmentScreen} />
     </Tab.Navigator>
   );
-}
+};
 
 export default BottomTabNavigator;

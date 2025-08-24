@@ -9,6 +9,8 @@ import BottomTabNavigator from './BottomTabNavigator'
 import LoginScreen from '../screens/Authentication/Login';
 import RegisterScreen from '../screens/Authentication/Register';
 import OnboardingScreen from '../screens/Splash/OnboardingScreen';
+import ViewProfileScreen from '../screens/Profile/ViewProfileScreen';
+import ProfileScreen from '../screens/Profile/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,6 +59,8 @@ const AppNavigator = () => {
                 {session ? (
                     <>
                         <Stack.Screen name="HomeTabs" component={BottomTabNavigator} />
+                        <Stack.Screen name="Profile" component={ProfileScreen} /> 
+                        <Stack.Screen name="ViewProfile" component={ViewProfileScreen} /> 
                         {/* Add other screens that need to be stacked above tabs */}
                     </>
                 ) : (
