@@ -7,12 +7,12 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Dimensions, 
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
 import { LineChart, PieChart } from 'react-native-chart-kit';
-import ChatBot from '../Chat/Chatbot'; 
+import ChatBot from '../Chat/Chatbot';
 import { supabase } from '../../lib/supabase';
 import { Colors, FontSizes, Spacing } from '../../utils/theme';
 import { dummyTransactions } from '../../dummyData';
@@ -36,7 +36,9 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         setLoadingProfile(false);
         return;
@@ -59,7 +61,7 @@ export default function HomeScreen({ navigation }) {
     fetchUserDetails();
   }, []);
 
-  // ✅ Calculate balance, prepare chart data, and category data
+  // Calculate balance, prepare chart data, and category data
   useEffect(() => {
     const income = dummyTransactions
       .filter(txn => txn.type === 'Credit')
@@ -73,35 +75,63 @@ export default function HomeScreen({ navigation }) {
     setTotalExpenses(expenses);
     setBalance(income - expenses);
 
-    // ✅ Get latest 5 transactions
+    // Get latest 5 transactions
     const sorted = [...dummyTransactions].sort(
       (a, b) => new Date(b.date) - new Date(a.date),
     );
     setLatestTransactions(sorted.slice(0, 5));
 
-    // ✅ Calculate category-wise spending
-    const expenseTransactions = dummyTransactions.filter(txn => txn.type === 'Debit');
+    // Calculate category-wise spending
+    const expenseTransactions = dummyTransactions.filter(
+      txn => txn.type === 'Debit',
+    );
     const categoryTotals = {};
-    
+
     expenseTransactions.forEach(txn => {
       // Assign categories based on transaction remarks (you can modify this logic)
       let category = 'Others';
       const remark = txn.remark.toLowerCase();
-      
-      if (remark.includes('food') || remark.includes('restaurant') || remark.includes('grocery')) {
+
+      if (
+        remark.includes('food') ||
+        remark.includes('restaurant') ||
+        remark.includes('grocery')
+      ) {
         category = 'Food & Dining';
-      } else if (remark.includes('transport') || remark.includes('fuel') || remark.includes('uber') || remark.includes('taxi')) {
+      } else if (
+        remark.includes('transport') ||
+        remark.includes('fuel') ||
+        remark.includes('uber') ||
+        remark.includes('taxi')
+      ) {
         category = 'Transportation';
-      } else if (remark.includes('shopping') || remark.includes('clothes') || remark.includes('amazon')) {
+      } else if (
+        remark.includes('shopping') ||
+        remark.includes('clothes') ||
+        remark.includes('amazon')
+      ) {
         category = 'Shopping';
-      } else if (remark.includes('entertainment') || remark.includes('movie') || remark.includes('netflix')) {
+      } else if (
+        remark.includes('entertainment') ||
+        remark.includes('movie') ||
+        remark.includes('netflix')
+      ) {
         category = 'Entertainment';
-      } else if (remark.includes('bill') || remark.includes('electricity') || remark.includes('water') || remark.includes('rent')) {
+      } else if (
+        remark.includes('bill') ||
+        remark.includes('electricity') ||
+        remark.includes('water') ||
+        remark.includes('rent')
+      ) {
         category = 'Bills & Utilities';
-      } else if (remark.includes('health') || remark.includes('medical') || remark.includes('doctor')) {
+      } else if (
+        remark.includes('health') ||
+        remark.includes('medical') ||
+        remark.includes('doctor')
+      ) {
         category = 'Healthcare';
       }
-      
+
       categoryTotals[category] = (categoryTotals[category] || 0) + txn.amount;
     });
 
@@ -110,12 +140,20 @@ export default function HomeScreen({ navigation }) {
       .map(([name, population]) => ({ name, population }))
       .sort((a, b) => b.population - a.population);
 
-    // Colors for pie chart
-    const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384'];
+    // Colors for pie chart using primary shades and background colors
+    const colors = [
+      Colors.primary,
+      Colors.primaryLight,
+      Colors.primaryDark,
+      Colors.backgroundAlt,
+      Colors.accentCoral,
+      Colors.accentTeal,
+      Colors.accentPink,
+    ];
     const categoryDataWithColors = categoryArray.map((item, index) => ({
       ...item,
       color: colors[index % colors.length],
-      legendFontColor: '#7F7F7F',
+      legendFontColor: Colors.textPrimary,
       legendFontSize: 12,
     }));
 
@@ -145,11 +183,11 @@ export default function HomeScreen({ navigation }) {
     const hour = new Date().getHours();
 
     if (hour >= 5 && hour < 12) {
-      return { text: "Good Morning"};
+      return { text: 'Good Morning' };
     } else if (hour >= 12 && hour < 17) {
-      return { text: "Good Afternoon" };
+      return { text: 'Good Afternoon' };
     } else {
-      return { text: "Good Evening"};
+      return { text: 'Good Evening' };
     }
   };
 
@@ -157,7 +195,9 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ padding: Spacing.md, paddingBottom: 100 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: Spacing.md, paddingBottom: 100 }}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.logo}>WealthWise</Text>
@@ -176,110 +216,166 @@ export default function HomeScreen({ navigation }) {
 
         {/* Welcome */}
         <Text style={styles.title}>
-          {greeting.text}, {profile ? profile.first_name : 'User'}!
+          {greeting.text},{' '}
+          <Text style={styles.userName}>
+            {profile ? profile.first_name : 'User'}
+          </Text>
+          !
         </Text>
         <Text style={styles.subtitle}>Welcome back to WealthWise</Text>
 
-        {/* Summary Cards */}
+        {/* Summary Cards - Uneven Grid */}
         <View style={styles.cardGrid}>
-          {/* Row 1 */}
-          <View style={[styles.cardRow, { marginBottom: 12 }]}>
-            <View style={[styles.card, styles.cardBalance]}>
-              <Text style={styles.cardLabel}>Current Balance</Text>
-              <Text style={styles.cardValue}>₹{balance}</Text>
-            </View>
-            <View style={[styles.card, styles.cardIncome]}>
+          {/* Featured Balance Card - Full Width */}
+          <View style={[styles.card, styles.cardBalance]}>
+            <Text style={styles.cardBalanceLabel}>Current Balance</Text>
+            <Text style={styles.cardBalanceValue}>
+              ₹{balance.toLocaleString()}
+            </Text>
+          </View>
+
+          {/* Row with Income and Transactions */}
+          <View style={[styles.cardRow, { marginTop: 16 }]}>
+            <View style={[styles.card, styles.cardIncome, { flex: 1.5 }]}>
               <Text style={styles.cardLabel}>Total Income</Text>
-              <Text style={[styles.cardValue, { color: 'green' }]}>
-                ₹{totalIncome}
+              <Text style={styles.cardIncomeValue}>
+                ₹{totalIncome.toLocaleString()}
               </Text>
+            </View>
+            <View style={[styles.card, styles.cardTransactions, { flex: 1 }]}>
+              <Text style={styles.cardLabel}>Transactions</Text>
+              <Text style={styles.cardValue}>{dummyTransactions.length}</Text>
             </View>
           </View>
 
-          {/* Row 2 */}
-          <View style={styles.cardRow}>
-            <View style={[styles.card, styles.cardExpense]}>
+          {/* Expense Card - Centered */}
+          <View
+            style={[
+              styles.cardRow,
+              { marginTop: 16, justifyContent: 'center' },
+            ]}
+          >
+            <View style={[styles.card, styles.cardExpense, { width: '70%' }]}>
               <Text style={styles.cardLabel}>Total Expenses</Text>
-              <Text style={[styles.cardValue, { color: 'red' }]}>
-                ₹{totalExpenses}
+              <Text style={styles.cardExpenseValue}>
+                ₹{totalExpenses.toLocaleString()}
               </Text>
-            </View>
-            <View style={[styles.card, styles.cardTransactions]}>
-              <Text style={styles.cardLabel}>No. of Transactions</Text>
-              <Text style={styles.cardValue}>{dummyTransactions.length}</Text>
             </View>
           </View>
         </View>
 
-        {/* ✅ Chart Section */}
+        {/* Chart Section */}
         <View style={styles.chartSection}>
           <Text style={styles.sectionTitle}>Expenses Over Time</Text>
 
           <View style={{ alignItems: 'center' }}>
-            <View style={{ alignItems: 'center' }}>
-              {/* Chart */}
-              <LineChart
-                data={{
-                  labels: dummyTransactions
-                    .filter(txn => txn.type === 'Debit')
-                    .map(txn => txn.date.slice(5)),
-                  datasets: [
-                    {
-                      data: dummyTransactions
-                        .filter(txn => txn.type === 'Debit')
-                        .map(txn => txn.amount),
-                      color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-                      strokeWidth: 2,
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                alignItems: 'center',
+                paddingHorizontal:
+                  dummyTransactions.filter(txn => txn.type === 'Debit').length >
+                  6
+                    ? 20
+                    : 0,
+              }}
+              style={{
+                maxWidth: Dimensions.get('window').width - 40,
+              }}
+            >
+              <View style={{ alignItems: 'center' }}>
+                {/* Chart */}
+                <LineChart
+                  data={{
+                    labels: dummyTransactions
+                      .filter(txn => txn.type === 'Debit')
+                      .map(txn => txn.date.slice(5)),
+                    datasets: [
+                      {
+                        data: dummyTransactions
+                          .filter(txn => txn.type === 'Debit')
+                          .map(txn => txn.amount),
+                        color: (opacity = 1) =>
+                          `rgba(254, 113, 105, ${opacity})`, // accentCoral
+                        strokeWidth: 3,
+                      },
+                    ],
+                  }}
+                  width={Math.max(
+                    Dimensions.get('window').width - 40,
+                    dummyTransactions.filter(txn => txn.type === 'Debit')
+                      .length * 60,
+                  )}
+                  height={220}
+                  yAxisLabel="₹"
+                  yAxisInterval={1}
+                  chartConfig={{
+                    backgroundColor: Colors.backgroundLight,
+                    backgroundGradientFrom: Colors.backgroundLight,
+                    backgroundGradientTo: Colors.background,
+                    decimalPlaces: 0,
+                    color: (opacity = 1) => `rgba(220, 87, 79, ${opacity})`, // Darker accent coral
+                    labelColor: (opacity = 1) => Colors.textPrimary,
+                    propsForDots: {
+                      r: '6',
+                      strokeWidth: '2',
+                      stroke: Colors.accentCoral,
+                      fill: Colors.background,
                     },
-                  ],
-                }}
-                width={Dimensions.get('window').width - 40} // give full width, less margin
-                height={220}
-                yAxisLabel="₹"
-                yAxisInterval={1}
-                chartConfig={{
-                  backgroundColor: '#fff',
-                  backgroundGradientFrom: '#fff',
-                  backgroundGradientTo: '#fff',
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  propsForDots: {
-                    r: '5',
-                    strokeWidth: '2',
-                    stroke: '#ff1744',
-                  },
-                }}
-                bezier
-                style={{ borderRadius: 12 }}
-              />
+                    propsForBackgroundLines: {
+                      strokeWidth: 0,
+                      stroke: 'transparent',
+                    },
+                    propsForVerticalLabels: {
+                      fontSize: 12,
+                      fill: Colors.textPrimary,
+                    },
+                    propsForHorizontalLabels: {
+                      fontSize: 12,
+                      fill: Colors.textPrimary,
+                    },
+                  }}
+                  bezier
+                  withHorizontalLines={false}
+                  withVerticalLines={false}
+                  withInnerLines={false}
+                  withOuterLines={false}
+                  style={{
+                    borderRadius: 12,
+                    backgroundColor: 'transparent',
+                  }}
+                />
 
-              {/* ✅ Y-Axis Label Overlay */}
-              <Text
-                style={{
-                  position: 'absolute',
-                  left: -35,
-                  top: 100,
-                  transform: [{ rotate: '-90deg' }],
-                  fontSize: 12,
-                  color: 'gray',
-                }}
-              >
-                Expenses (₹)
-              </Text>
-            </View>
+                {/* Y-Axis Label Overlay */}
+                <Text
+                  style={{
+                    position: 'absolute',
+                    left: -35,
+                    top: 100,
+                    transform: [{ rotate: '-90deg' }],
+                    fontSize: 12,
+                    color: Colors.textPrimary,
+                  }}
+                >
+                  Expenses (₹)
+                </Text>
+              </View>
+            </ScrollView>
 
             {/* X-Axis Label */}
-            <Text style={{ fontSize: 12, color: 'gray' }}>
+            <Text
+              style={{ fontSize: 12, color: Colors.textPrimary, marginTop: 10 }}
+            >
               Date
             </Text>
           </View>
         </View>
 
-        {/* ✅ NEW: Category-wise Spending Section */}
+        {/* Category-wise Spending Section */}
         <View style={styles.categorySection}>
           <Text style={styles.sectionTitle}>Category-wise Spending</Text>
-          
+
           {categoryData.length > 0 ? (
             <>
               {/* Pie Chart */}
@@ -289,10 +385,10 @@ export default function HomeScreen({ navigation }) {
                   width={Dimensions.get('window').width - 40}
                   height={220}
                   chartConfig={{
-                    backgroundColor: '#fff',
-                    backgroundGradientFrom: '#fff',
-                    backgroundGradientTo: '#fff',
-                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    backgroundColor: Colors.backgroundLight,
+                    backgroundGradientFrom: Colors.backgroundLight,
+                    backgroundGradientTo: Colors.background,
+                    color: (opacity = 1) => Colors.textPrimary,
                   }}
                   accessor="population"
                   backgroundColor="transparent"
@@ -306,13 +402,23 @@ export default function HomeScreen({ navigation }) {
                 {categoryData.map((category, index) => (
                   <View key={index} style={styles.categoryItem}>
                     <View style={styles.categoryInfo}>
-                      <View style={[styles.categoryColor, { backgroundColor: category.color }]} />
+                      <View
+                        style={[
+                          styles.categoryColor,
+                          { backgroundColor: category.color },
+                        ]}
+                      />
                       <Text style={styles.categoryName}>{category.name}</Text>
                     </View>
                     <View style={styles.categoryAmount}>
-                      <Text style={styles.categoryAmountText}>₹{category.population}</Text>
+                      <Text style={styles.categoryAmountText}>
+                        ₹{category.population.toLocaleString()}
+                      </Text>
                       <Text style={styles.categoryPercentage}>
-                        {((category.population / totalExpenses) * 100).toFixed(1)}%
+                        {((category.population / totalExpenses) * 100).toFixed(
+                          1,
+                        )}
+                        %
                       </Text>
                     </View>
                   </View>
@@ -321,28 +427,58 @@ export default function HomeScreen({ navigation }) {
             </>
           ) : (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>No expense data available</Text>
+              <Text style={styles.emptyStateText}>
+                No expense data available
+              </Text>
             </View>
           )}
         </View>
 
-        {/* ✅ Latest Transactions Section */}
+        {/* Latest Transactions Section */}
         <View style={styles.transactionsSection}>
           <Text style={styles.sectionTitle}>Latest Transactions</Text>
           {latestTransactions.map((txn, index) => (
             <View key={index} style={styles.transactionItem}>
-              <View>
-                <Text style={styles.transactionTitle}>{txn.remark}</Text>
-                <Text style={styles.transactionDate}>{txn.date}</Text>
+              <View style={styles.transactionLeft}>
+                <View
+                  style={[
+                    styles.transactionIcon,
+                    {
+                      backgroundColor:
+                        txn.type === 'Credit'
+                          ? Colors.accentTeal
+                          : Colors.accentPink,
+                    },
+                  ]}
+                >
+                  <Text style={styles.transactionIconText}>
+                    {txn.type === 'Credit' ? '↑' : '↓'}
+                  </Text>
+                </View>
+                <View style={styles.transactionDetails}>
+                  <Text style={styles.transactionTitle}>{txn.remark}</Text>
+                  <Text style={styles.transactionDate}>{txn.date}</Text>
+                </View>
               </View>
-              <Text
-                style={[
-                  styles.transactionAmount,
-                  { color: txn.type === 'Credit' ? 'green' : 'red' },
-                ]}
-              >
-                {txn.type === 'Credit' ? '+' : '-'}₹{txn.amount}
-              </Text>
+              <View style={styles.transactionRight}>
+                <Text
+                  style={[
+                    styles.transactionAmount,
+                    {
+                      color:
+                        txn.type === 'Credit'
+                          ? Colors.accentTeal
+                          : Colors.accentPink,
+                    },
+                  ]}
+                >
+                  {txn.type === 'Credit' ? '+' : '-'}₹
+                  {txn.amount.toLocaleString()}
+                </Text>
+                <Text style={styles.transactionType}>
+                  {txn.type === 'Credit' ? 'Credit' : 'Debit'}
+                </Text>
+              </View>
             </View>
           ))}
         </View>
@@ -354,14 +490,14 @@ export default function HomeScreen({ navigation }) {
           style={styles.blurBackground}
           blurType="light"
           blurAmount={15}
-          blurRadius={18}  
+          blurRadius={18}
           reducedTransparencyFallbackColor="white"
         />
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={openChat}
-        >
-          <Image source={require('../../assets/Ai-Bot.png')} style={styles.brandImage} />
+        <TouchableOpacity style={styles.fab} onPress={openChat}>
+          <Image
+            source={require('../../assets/Ai-Bot.png')}
+            style={styles.brandImage}
+          />
         </TouchableOpacity>
       </View>
 
@@ -410,7 +546,10 @@ export default function HomeScreen({ navigation }) {
               {/* Chat header row */}
               <View style={styles.chatHeader}>
                 <Text style={styles.chatTitle}>WealthWise AI</Text>
-                <TouchableOpacity style={styles.closeButton} onPress={closeChat}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={closeChat}
+                >
                   <Text style={styles.closeText}>✕</Text>
                 </TouchableOpacity>
               </View>
@@ -426,9 +565,9 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: Colors.neutralBackground 
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundLight,
   },
   header: {
     flexDirection: 'row',
@@ -436,38 +575,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.lg,
   },
-  logo: { 
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    color: Colors.text,
+  logo: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark,
   },
   avatarCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#a2a2a2ff',
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   avatarText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
+    color: Colors.textLight,
     textTransform: 'uppercase',
   },
   title: {
-    fontSize: 24,
+    fontSize: FontSizes.xl,
     fontWeight: 'bold',
     marginBottom: 4,
-    color: Colors.text,
+    color: Colors.textDark,
   },
-  subtitle: { 
-    fontSize: 16, 
-    color: 'gray', 
-    marginBottom: Spacing.lg 
+  userName: {
+    color: Colors.primaryDeep,
+  },
+  subtitle: {
+    fontSize: FontSizes.md,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.lg,
   },
 
-  // Grid Styling
+  // Updated Grid Styling - Uneven Cards
   cardGrid: {
     marginBottom: Spacing.lg,
   },
@@ -476,49 +623,96 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     padding: Spacing.md,
-    borderWidth: 0.5,
-    borderColor: '#ddd',
-    borderRadius: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  cardBalance: { backgroundColor: '#E3F2FD' },
-  cardIncome: { backgroundColor: '#E8F5E9' },
-  cardExpense: { backgroundColor: '#FFEBEE' },
-  cardTransactions: { backgroundColor: '#FFF3E0' },
-  cardLabel: { 
-    fontSize: FontSizes.sm, 
-    color: 'gray', 
-    marginBottom: 4 
+
+  // Featured Balance Card
+  cardBalance: {
+    backgroundColor: Colors.primaryDark,
+    padding: Spacing.lg,
   },
-  cardValue: { 
-    fontSize: FontSizes.lg, 
-    fontWeight: 'bold', 
-    color: Colors.text 
+  cardBalanceLabel: {
+    fontSize: FontSizes.sm,
+    color: Colors.textLight,
+    marginBottom: 8,
+    opacity: 0.9,
+  },
+  cardBalanceValue: {
+    fontSize: FontSizes.xxl,
+    fontWeight: 'bold',
+    color: Colors.textLight,
+  },
+
+  // Other Cards
+  cardIncome: {
+    backgroundColor: Colors.background,
+  },
+  cardExpense: {
+    backgroundColor: Colors.background,
+  },
+  cardTransactions: {
+    backgroundColor: Colors.background,
+  },
+
+  cardLabel: {
+    fontSize: FontSizes.sm,
+    color: Colors.textPrimary,
+    marginBottom: 6,
+  },
+  cardValue: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+  },
+  cardIncomeValue: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.accentTeal,
+  },
+  cardExpenseValue: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.accentCoral,
   },
 
   // Chart Section
   chartSection: {
     marginTop: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   sectionTitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
     marginBottom: 12,
-    color: Colors.text,
+    color: Colors.textDark,
   },
 
   // Category-wise Spending Section
   categorySection: {
     marginTop: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 4,
   },
   categoryList: {
     marginTop: 10,
@@ -527,9 +721,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#eee',
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    marginVertical: 2,
+    borderRadius: 8,
+    backgroundColor: Colors.backgroundLight,
   },
   categoryInfo: {
     flexDirection: 'row',
@@ -543,22 +739,22 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   categoryName: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: '500',
-    color: Colors.text,
+    color: Colors.textDark,
     flex: 1,
   },
   categoryAmount: {
     alignItems: 'flex-end',
   },
   categoryAmountText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.textDark,
   },
   categoryPercentage: {
     fontSize: 12,
-    color: 'gray',
+    color: Colors.textPrimary,
     marginTop: 2,
   },
   emptyState: {
@@ -566,37 +762,77 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyStateText: {
-    fontSize: 14,
-    color: 'gray',
+    fontSize: FontSizes.sm,
+    color: Colors.textPrimary,
     fontStyle: 'italic',
   },
 
-  // Transactions Section
+  // Enhanced Transactions Section
   transactionsSection: {
     marginTop: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 4,
   },
   transactionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#ddd',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    marginVertical: 4,
+    borderRadius: 12,
+    backgroundColor: Colors.backgroundLight,
   },
-  transactionTitle: { 
-    fontSize: 14, 
-    fontWeight: '600', 
-    color: Colors.text 
+  transactionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
-  transactionDate: { 
-    fontSize: 12, 
-    color: 'gray' 
+  transactionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  transactionAmount: { 
-    fontSize: 14, 
-    fontWeight: 'bold' 
+  transactionIconText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.textLight,
+  },
+  transactionDetails: {
+    flex: 1,
+  },
+  transactionTitle: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    color: Colors.textDark,
+    marginBottom: 2,
+  },
+  transactionDate: {
+    fontSize: 12,
+    color: Colors.textPrimary,
+  },
+  transactionRight: {
+    alignItems: 'flex-end',
+  },
+  transactionAmount: {
+    fontSize: FontSizes.sm,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  transactionType: {
+    fontSize: 11,
+    color: Colors.textPrimary,
+    textTransform: 'uppercase',
+    fontWeight: '500',
   },
 
   // Chatbot FAB and Modal Styles
@@ -633,20 +869,20 @@ const styles = StyleSheet.create({
   chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',  
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.2)',
-    backgroundColor: 'transparent',           
+    backgroundColor: 'transparent',
     position: 'relative',
-    overflow: 'hidden', 
+    overflow: 'hidden',
   },
   chatTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     fontFamily: 'Lato-Bold',
-    color: '#350c8dff',
+    color: Colors.primaryDeep,
     letterSpacing: 0.5,
     backgroundColor: 'rgba(223, 251, 255, 0.7)',
     paddingHorizontal: 12,
@@ -655,14 +891,14 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    right: 16,      
+    right: 16,
     top: '50%',
     transform: [{ translateY: -11 }],
   },
   closeText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#e30707ff',
+    color: Colors.accentCoral,
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
