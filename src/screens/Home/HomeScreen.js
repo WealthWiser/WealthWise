@@ -7,12 +7,12 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Dimensions, 
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
 import { LineChart, PieChart } from 'react-native-chart-kit';
-import ChatBot from '../Chat/Chatbot'; 
+import ChatBot from '../Chat/Chatbot';
 import { supabase } from '../../lib/supabase';
 import { Colors, FontSizes, Spacing } from '../../utils/theme';
 import { dummyTransactions } from '../../dummyData';
@@ -82,12 +82,12 @@ export default function HomeScreen({ navigation }) {
     // ✅ Calculate category-wise spending
     const expenseTransactions = dummyTransactions.filter(txn => txn.type === 'Debit');
     const categoryTotals = {};
-    
+
     expenseTransactions.forEach(txn => {
       // Assign categories based on transaction remarks (you can modify this logic)
       let category = 'Others';
       const remark = txn.remark.toLowerCase();
-      
+
       if (remark.includes('food') || remark.includes('restaurant') || remark.includes('grocery')) {
         category = 'Food & Dining';
       } else if (remark.includes('transport') || remark.includes('fuel') || remark.includes('uber') || remark.includes('taxi')) {
@@ -101,7 +101,7 @@ export default function HomeScreen({ navigation }) {
       } else if (remark.includes('health') || remark.includes('medical') || remark.includes('doctor')) {
         category = 'Healthcare';
       }
-      
+
       categoryTotals[category] = (categoryTotals[category] || 0) + txn.amount;
     });
 
@@ -157,7 +157,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ padding: Spacing.md, paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ padding: Spacing.md, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.logo}>WealthWise</Text>
@@ -279,7 +279,7 @@ export default function HomeScreen({ navigation }) {
         {/* ✅ NEW: Category-wise Spending Section */}
         <View style={styles.categorySection}>
           <Text style={styles.sectionTitle}>Category-wise Spending</Text>
-          
+
           {categoryData.length > 0 ? (
             <>
               {/* Pie Chart */}
@@ -354,7 +354,7 @@ export default function HomeScreen({ navigation }) {
           style={styles.blurBackground}
           blurType="light"
           blurAmount={15}
-          blurRadius={18}  
+          blurRadius={18}
           reducedTransparencyFallbackColor="white"
         />
         <TouchableOpacity
@@ -426,9 +426,9 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: Colors.neutralBackground 
+  container: {
+    flex: 1,
+    backgroundColor: Colors.neutralBackground
   },
   header: {
     flexDirection: 'row',
@@ -436,9 +436,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.lg,
   },
-  logo: { 
-    fontSize: 20, 
-    fontWeight: 'bold', 
+  logo: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: Colors.text,
   },
   avatarCircle: {
@@ -461,10 +461,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     color: Colors.text,
   },
-  subtitle: { 
-    fontSize: 16, 
-    color: 'gray', 
-    marginBottom: Spacing.lg 
+  subtitle: {
+    fontSize: 16,
+    color: 'gray',
+    marginBottom: Spacing.lg
   },
 
   // Grid Styling
@@ -487,15 +487,15 @@ const styles = StyleSheet.create({
   cardIncome: { backgroundColor: '#E8F5E9' },
   cardExpense: { backgroundColor: '#FFEBEE' },
   cardTransactions: { backgroundColor: '#FFF3E0' },
-  cardLabel: { 
-    fontSize: FontSizes.sm, 
-    color: 'gray', 
-    marginBottom: 4 
+  cardLabel: {
+    fontSize: FontSizes.sm,
+    color: 'gray',
+    marginBottom: 4
   },
-  cardValue: { 
-    fontSize: FontSizes.lg, 
-    fontWeight: 'bold', 
-    color: Colors.text 
+  cardValue: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.text
   },
 
   // Chart Section
@@ -585,18 +585,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: '#ddd',
   },
-  transactionTitle: { 
-    fontSize: 14, 
-    fontWeight: '600', 
-    color: Colors.text 
+  transactionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text
   },
-  transactionDate: { 
-    fontSize: 12, 
-    color: 'gray' 
+  transactionDate: {
+    fontSize: 12,
+    color: 'gray'
   },
-  transactionAmount: { 
-    fontSize: 14, 
-    fontWeight: 'bold' 
+  transactionAmount: {
+    fontSize: 14,
+    fontWeight: 'bold'
   },
 
   // Chatbot FAB and Modal Styles
@@ -633,14 +633,14 @@ const styles = StyleSheet.create({
   chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',  
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.2)',
-    backgroundColor: 'transparent',           
+    backgroundColor: 'transparent',
     position: 'relative',
-    overflow: 'hidden', 
+    overflow: 'hidden',
   },
   chatTitle: {
     fontSize: 18,
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    right: 16,      
+    right: 16,
     top: '50%',
     transform: [{ translateY: -11 }],
   },
