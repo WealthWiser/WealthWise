@@ -1,19 +1,34 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Image, ScrollView } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import Feather from 'react-native-vector-icons/Feather';
-import { changeStatusBarColorTop, changeStatusBarColorBot } from '../../redux/slices/statusbarColor';
+import {
+  changeStatusBarColorTop,
+  changeStatusBarColorBot,
+} from '../../redux/slices/statusbarColor';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { supabase } from '../../lib/supabase';
 import { useDispatch } from 'react-redux';
 import { Colors } from '../../utils/theme';
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from '@react-navigation/native';
 
 // Validation schema
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email('Invalid email format').required('Email is required'),
-  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+  email: Yup.string()
+    .email('Invalid email format')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
 });
 
 const LoginScreen = ({ navigation }) => {
@@ -28,15 +43,19 @@ const LoginScreen = ({ navigation }) => {
         dispatch(changeStatusBarColorTop(Colors.neutralBackground));
         dispatch(changeStatusBarColorBot(Colors.neutralBackground));
       };
-    }, [dispatch])
+    }, [dispatch]),
   );
 
   return (
     <View style={styles.root}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled">
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Top Blue Background */}
           <View style={styles.bgTop} />
           <View style={styles.container}>
@@ -78,7 +97,11 @@ const LoginScreen = ({ navigation }) => {
                         mode="flat"
                         style={styles.input}
                         theme={{
-                          colors: { background: 'transparent', text: '#28322e', placeholder: '#8dbba7' }
+                          colors: {
+                            background: 'transparent',
+                            text: '#28322e',
+                            placeholder: '#8dbba7',
+                          },
                         }}
                         underlineColor="transparent"
                         placeholderTextColor="#8d9fbbff"
@@ -86,7 +109,9 @@ const LoginScreen = ({ navigation }) => {
                         keyboardType="email-address"
                       />
                     </View>
-                    {touched.email && errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                    {touched.email && errors.email && (
+                      <Text style={styles.errorText}>{errors.email}</Text>
+                    )}
 
                     {/* Password Field */}
                     <Text style={styles.label}>Password</Text>
@@ -100,7 +125,11 @@ const LoginScreen = ({ navigation }) => {
                         style={styles.input}
                         secureTextEntry={!showPassword}
                         theme={{
-                          colors: { background: 'transparent', text: '#28322e', placeholder: '#8dbba7' }
+                          colors: {
+                            background: 'transparent',
+                            text: '#28322e',
+                            placeholder: '#8dbba7',
+                          },
                         }}
                         placeholderTextColor="#8d9fbbff"
                         underlineColor="transparent"
@@ -116,8 +145,12 @@ const LoginScreen = ({ navigation }) => {
                         )}
                       </TouchableOpacity>
                     </View>
-                    {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-                    {status ? <Text style={styles.errorText}>{status}</Text> : null}
+                    {touched.password && errors.password && (
+                      <Text style={styles.errorText}>{errors.password}</Text>
+                    )}
+                    {status ? (
+                      <Text style={styles.errorText}>{status}</Text>
+                    ) : null}
 
                     {/* Log In Button */}
                     <Button
@@ -133,7 +166,9 @@ const LoginScreen = ({ navigation }) => {
                     </Button>
 
                     {/* Forgot Password */}
-                    <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('ForgotPassword')}
+                    >
                       <Text style={styles.forgot}>Forgot Password?</Text>
                     </TouchableOpacity>
 
@@ -160,28 +195,32 @@ const LoginScreen = ({ navigation }) => {
                       <TouchableOpacity style={styles.socialButton}>
                         <Image
                           source={require('../../assets/facebook.png')}
-                          style={{ width: 35, height: 35, resizeMode: 'contain' }}
+                          style={{
+                            width: 35,
+                            height: 35,
+                            resizeMode: 'contain',
+                          }}
                         />
                       </TouchableOpacity>
 
                       <TouchableOpacity style={styles.socialButton}>
                         <Image
                           source={require('../../assets/google.png')}
-                          style={{ width: 22, height: 22, resizeMode: 'contain' }}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            resizeMode: 'contain',
+                          }}
                         />
                       </TouchableOpacity>
-
                     </View>
                   </>
                 )}
               </Formik>
             </View>
           </View>
-
         </ScrollView>
-
       </KeyboardAvoidingView>
-
     </View>
   );
 };
@@ -194,7 +233,9 @@ const styles = StyleSheet.create({
   bgTop: {
     backgroundColor: '#4981f9ff',
     position: 'absolute',
-    top: 0, left: 0, right: 0,
+    top: 0,
+    left: 0,
+    right: 0,
     height: '100%',
     borderBottomLeftRadius: 54,
     borderBottomRightRadius: 54,
@@ -359,7 +400,6 @@ const styles = StyleSheet.create({
     color: '#2614f0ff',
     fontWeight: 'bold',
   },
-
 });
 
 export default LoginScreen;

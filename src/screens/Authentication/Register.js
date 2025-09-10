@@ -8,7 +8,7 @@ import {
   Keyboard,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Image
+  Image,
 } from 'react-native';
 import {
   TextInput,
@@ -16,7 +16,7 @@ import {
   Text,
   Checkbox,
   IconButton,
-  Divider
+  Divider,
 } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
@@ -36,7 +36,7 @@ const RegisterScreen = ({ navigation }) => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const formatDate = (date) => {
+  const formatDate = date => {
     return `${date.getFullYear()}-${(date.getMonth() + 1)
       .toString()
       .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
@@ -50,7 +50,10 @@ const RegisterScreen = ({ navigation }) => {
       .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
       .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
       .matches(/\d/, 'Password must contain at least one number')
-      .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character')
+      .matches(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        'Password must contain at least one special character',
+      )
       .required('Password is required.'),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref('password')], 'Passwords must match')
@@ -58,12 +61,18 @@ const RegisterScreen = ({ navigation }) => {
     dob: Yup.date().required('Date of birth is required.'),
     gender: Yup.string().required('Select your gender.'),
     country: Yup.string().required('Select your country.'),
-    agree: Yup.boolean().oneOf([true], 'You must agree to the Terms of Service.'),
+    agree: Yup.boolean().oneOf(
+      [true],
+      'You must agree to the Terms of Service.',
+    ),
   });
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView style={{ flex: 1 }}  behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
@@ -93,18 +102,19 @@ const RegisterScreen = ({ navigation }) => {
                   validationSchema={RegisterSchema}
                   onSubmit={async (values, { setSubmitting, setErrors }) => {
                     try {
-                      const { data: signUpData, error } = await supabase.auth.signUp({
-                        email: values.email,
-                        password: values.password,
-                        options: {
-                          data: {
-                            full_name: values.fullName,
-                            dob: formatDate(values.dob),
-                            gender: values.gender,
-                            country: values.country,
+                      const { data: signUpData, error } =
+                        await supabase.auth.signUp({
+                          email: values.email,
+                          password: values.password,
+                          options: {
+                            data: {
+                              full_name: values.fullName,
+                              dob: formatDate(values.dob),
+                              gender: values.gender,
+                              country: values.country,
+                            },
                           },
-                        },
-                      });
+                        });
 
                       if (error) {
                         setErrors({ email: error.message });
@@ -115,16 +125,18 @@ const RegisterScreen = ({ navigation }) => {
                       const userEmail = signUpData?.user?.email;
 
                       if (userId) {
-                        const { error: insertError } = await supabase.from('users').insert([
-                          {
-                            id: userId,
-                            email: userEmail,
-                            full_name: values.fullName,
-                            dob: formatDate(values.dob),
-                            gender: values.gender,
-                            country: values.country,
-                          },
-                        ]);
+                        const { error: insertError } = await supabase
+                          .from('users')
+                          .insert([
+                            {
+                              id: userId,
+                              email: userEmail,
+                              full_name: values.fullName,
+                              dob: formatDate(values.dob),
+                              gender: values.gender,
+                              country: values.country,
+                            },
+                          ]);
 
                         if (insertError) {
                           console.error('Insert error:', insertError.message);
@@ -137,7 +149,14 @@ const RegisterScreen = ({ navigation }) => {
                     }
                   }}
                 >
-                  {({ handleChange, handleSubmit, setFieldValue, values, errors, touched }) => (
+                  {({
+                    handleChange,
+                    handleSubmit,
+                    setFieldValue,
+                    values,
+                    errors,
+                    touched,
+                  }) => (
                     <>
                       <Text style={styles.heading}>Create Your Account</Text>
 
@@ -151,14 +170,22 @@ const RegisterScreen = ({ navigation }) => {
                         left={<TextInput.Icon icon="account" />}
                         error={touched.fullName && !!errors.fullName}
                       />
-                      {touched.fullName && errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
+                      {touched.fullName && errors.fullName && (
+                        <Text style={styles.errorText}>{errors.fullName}</Text>
+                      )}
 
                       {/* DOB */}
-                      <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
+                      <TouchableOpacity
+                        onPress={() => setDatePickerVisibility(true)}
+                      >
                         <View pointerEvents="none">
                           <TextInput
                             label="Date of Birth"
-                            value={values.dob ? moment(values.dob).format('DD MMMM, YYYY') : ''}
+                            value={
+                              values.dob
+                                ? moment(values.dob).format('DD MMMM, YYYY')
+                                : ''
+                            }
                             editable={false}
                             style={styles.input}
                             mode="outlined"
@@ -167,14 +194,16 @@ const RegisterScreen = ({ navigation }) => {
                           />
                         </View>
                       </TouchableOpacity>
-                      {touched.dob && errors.dob && <Text style={styles.errorText}>{errors.dob}</Text>}
+                      {touched.dob && errors.dob && (
+                        <Text style={styles.errorText}>{errors.dob}</Text>
+                      )}
 
                       <DateTimePickerModal
                         isVisible={isDatePickerVisible}
                         mode="date"
                         maximumDate={new Date()}
                         date={values.dob || new Date(2000, 0, 1)}
-                        onConfirm={(date) => {
+                        onConfirm={date => {
                           setFieldValue('dob', date);
                           setDatePickerVisibility(false);
                         }}
@@ -192,7 +221,9 @@ const RegisterScreen = ({ navigation }) => {
                         left={<TextInput.Icon icon="email" />}
                         error={touched.email && !!errors.email}
                       />
-                      {touched.email && errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                      {touched.email && errors.email && (
+                        <Text style={styles.errorText}>{errors.email}</Text>
+                      )}
 
                       {/* Password */}
                       <View style={styles.passwordRow}>
@@ -210,7 +241,9 @@ const RegisterScreen = ({ navigation }) => {
                           onPress={() => setShowPassword(!showPassword)}
                         />
                       </View>
-                      {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                      {touched.password && errors.password && (
+                        <Text style={styles.errorText}>{errors.password}</Text>
+                      )}
 
                       {/* Confirm Password */}
                       <View style={styles.passwordRow}>
@@ -222,16 +255,22 @@ const RegisterScreen = ({ navigation }) => {
                           secureTextEntry={!showConfirmPassword}
                           style={[styles.input, { flex: 1 }]}
                           left={<TextInput.Icon icon="lock-check-outline" />}
-                          error={touched.confirmPassword && !!errors.confirmPassword}
+                          error={
+                            touched.confirmPassword && !!errors.confirmPassword
+                          }
                         />
                         <IconButton
                           icon={showConfirmPassword ? 'eye-off' : 'eye'}
-                          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onPress={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           style={styles.eyeIcon}
                         />
                       </View>
                       {touched.confirmPassword && errors.confirmPassword && (
-                        <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                        <Text style={styles.errorText}>
+                          {errors.confirmPassword}
+                        </Text>
                       )}
 
                       {/* Gender */}
@@ -243,20 +282,22 @@ const RegisterScreen = ({ navigation }) => {
                             { key: 'male', icon: maleIcon },
                             { key: 'female', icon: femaleIcon },
                             { key: 'other', icon: otherIcon },
-                          ].map((g) => (
+                          ].map(g => (
                             <TouchableOpacity
                               key={g.key}
                               onPress={() => setFieldValue('gender', g.key)}
                               style={[
                                 styles.genderButton,
-                                values.gender === g.key && styles.genderButtonSelected,
+                                values.gender === g.key &&
+                                  styles.genderButtonSelected,
                               ]}
                             >
                               <Image
                                 source={g.icon}
                                 style={[
                                   styles.genderIcon,
-                                  values.gender === g.key && styles.genderIconSelected,
+                                  values.gender === g.key &&
+                                    styles.genderIconSelected,
                                 ]}
                                 resizeMode="contain"
                               />
@@ -264,7 +305,6 @@ const RegisterScreen = ({ navigation }) => {
                           ))}
                         </View>
                       </View>
-
 
                       {/* Country */}
                       <Dropdown
@@ -274,7 +314,7 @@ const RegisterScreen = ({ navigation }) => {
                         showDropDown={() => setShowCountryDropdown(true)}
                         onDismiss={() => setShowCountryDropdown(false)}
                         value={values.country}
-                        onSelect={(val) => setFieldValue('country', val)}
+                        onSelect={val => setFieldValue('country', val)}
                         options={[
                           { label: 'India', value: 'india' },
                           { label: 'United States', value: 'usa' },
@@ -284,7 +324,9 @@ const RegisterScreen = ({ navigation }) => {
                         ]}
                         inputProps={{ style: styles.input }}
                       />
-                      {touched.country && errors.country && <Text style={styles.errorText}>{errors.country}</Text>}
+                      {touched.country && errors.country && (
+                        <Text style={styles.errorText}>{errors.country}</Text>
+                      )}
 
                       {/* Terms */}
                       <View style={styles.checkboxRow}>
@@ -297,10 +339,15 @@ const RegisterScreen = ({ navigation }) => {
                           onPress={() => setFieldValue('agree', !values.agree)}
                           style={styles.termsText}
                         >
-                          I agree to the <Text style={styles.link}>Terms & Privacy Policy</Text>
+                          I agree to the{' '}
+                          <Text style={styles.link}>
+                            Terms & Privacy Policy
+                          </Text>
                         </Text>
                       </View>
-                      {touched.agree && errors.agree && <Text style={styles.errorText}>{errors.agree}</Text>}
+                      {touched.agree && errors.agree && (
+                        <Text style={styles.errorText}>{errors.agree}</Text>
+                      )}
 
                       {/* Register button */}
                       <Button
@@ -333,7 +380,10 @@ const RegisterScreen = ({ navigation }) => {
 
                       <Text style={styles.loginText}>
                         Already have an account?{' '}
-                        <Text onPress={() => navigation.navigate('Login')} style={styles.link}>
+                        <Text
+                          onPress={() => navigation.navigate('Login')}
+                          style={styles.link}
+                        >
                           Login
                         </Text>
                       </Text>
@@ -546,12 +596,7 @@ const styles = StyleSheet.create({
     height: 32,
   },
 
-  genderIconSelected: {
-
-  },
-
-
-
+  genderIconSelected: {},
 });
 
 export default RegisterScreen;

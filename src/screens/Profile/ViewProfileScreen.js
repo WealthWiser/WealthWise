@@ -4,8 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  Image,
+  TouchableOpacity, 
   ActivityIndicator,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
@@ -112,7 +111,7 @@ const ViewProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: Colors.backgroundLight },
   scrollContainer: { padding: Spacing.md },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {

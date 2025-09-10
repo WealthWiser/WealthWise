@@ -1,36 +1,40 @@
+// utils/theme.js
+
 const Colors = {
-  // Classic Blue Set
-  primary: '#288cfa',
-  secondary: '#7ebcf9',
-  background: '#103766',
-  text: '#242c34',
+  // Primary Shades
+  primary: '#2DA0F8',
+  primaryLight: '#59BCF3',
+  primaryMid: '#2DA0F8', 
+  primaryDark: '#0E8BF9',
+  primaryDeep: '#10266F',
 
-  // Performance Green Set
-  success: '#2E865F',
-  mint: '#C6F4D6',
+  // Backgrounds
+  background: '#FFFFFF',
+  backgroundLight: '#F8FCFF',
+  backgroundAlt: '#CDE9FF',
+  neutralBackground: '#F5F5F5', 
 
-  // Warm Neutrals
-  neutralBackground: '#fff',
-  beige: '#d7ccc8',
-  brown: '#8d6e63',
+  // Text Colors
+  textPrimary: '#262E5B',
+  textDark: '#000000',
+  textLight: '#FFFFFF',
 
-  // Alerts
-  gold: '#ffd700',
-  warningRed: '#ff5252',
-  warningOrange: '#ff9800',
+  // Neutral Grays
+  grayDark: '#4A4A4A',  
+  grayLight: '#B0B0B0',  
 
-  // Supporting
-  greenDark: '#004d00',
-  greenMid: '#007a33',
-  greenSoft: '#66b3a1',
+  // Accent Colors
+  accentPink: '#EA4C89',
+  accentCoral: '#FE7169',
+  accentTeal: '#43BCA8',
 
-  blueDark: '#003366',
-  blueMid: '#00509e',
-  blueSoft: '#007acc',
-  blueLight: '#66a3ff',
+  // Extras
+  blueMid: '#2DA0F8', 
+  gold: '#FFD700',    
 
-  grayDark: '#333333',
-  grayLight: '#F5F5F5',
+  // Required for Paper / general use
+  black: '#000000',  
+  white: '#FFFFFF',
 };
 
 const Spacing = {
@@ -52,9 +56,8 @@ const FontSizes = {
 
 const Fonts = {
   primary: 'Lato-Regular',
-  heading: 'Roboto-Bold',
+  heading: 'Lato-Bold',
   fallback: 'Lato-BlackItalic',
-  stencil: 'AllertaStencil-Regular',
 };
 
 const FontWeights = {

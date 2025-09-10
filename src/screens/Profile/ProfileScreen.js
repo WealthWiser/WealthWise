@@ -186,7 +186,7 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.neutralBackground,
+    backgroundColor: Colors.backgroundLight,
   },
   header: {
     flexDirection: 'row',
