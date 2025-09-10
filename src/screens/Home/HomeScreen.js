@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Animated, Easing } from 'react-native';
 import {
   View,
@@ -16,13 +16,21 @@ import ChatBot from '../Chat/Chatbot';
 import { supabase } from '../../lib/supabase';
 import { Colors, FontSizes, Spacing } from '../../utils/theme';
 import { dummyTransactions } from '../../dummyData';
+import { baseurltest } from '../../assets/constants/baseurl';
+import TransactionsScreen from './Transactions';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTransactions } from '../../redux/slices/transactionSlice';
+import { ActivityIndicator } from 'react-native-paper';
+import Feather from "react-native-vector-icons/Feather";
+
 
 const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
   const animation = useRef(new Animated.Value(0)).current; // 0 = hidden, 1 = expanded
   const [chatVisible, setChatVisible] = useState(false);
-
+  const { data, loading, error } = useSelector((state) => state.transactions);
+  const dispatch = useDispatch();
   // User profile state
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -31,9 +39,21 @@ export default function HomeScreen({ navigation }) {
   const [balance, setBalance] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
-  const [latestTransactions, setLatestTransactions] = useState([]);
+  // const [latestTransactions, setLatestTransactions] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
-
+  const { latestTransactions } = useMemo(() => {
+    if (!data || data.length == 0) {
+      return { latestTransactions: [] };
+    }
+    let sortedData = [...data].sort((a, b) => new Date(b.txn_date) - new Date(a.txn_date));
+    sortedData = sortedData.slice(0, 5);
+    return {latestTransactions: sortedData};
+  }, [data])
+  // (data)=>{
+  //   let sortedData = [...data].sort((a, b) => new Date(b.txn_date) - new Date(a.txn_date));
+  //   sortedData = sortedData.slice(0, 5);
+  //   return sortedData;
+  // }
   useEffect(() => {
     const fetchUserDetails = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -52,10 +72,10 @@ export default function HomeScreen({ navigation }) {
         console.log('Fetch profile error:', error.message);
       } else {
         setProfile(data);
+        dispatch(fetchTransactions(user.id));
       }
       setLoadingProfile(false);
     };
-
     fetchUserDetails();
   }, []);
 
@@ -77,7 +97,7 @@ export default function HomeScreen({ navigation }) {
     const sorted = [...dummyTransactions].sort(
       (a, b) => new Date(b.date) - new Date(a.date),
     );
-    setLatestTransactions(sorted.slice(0, 5));
+    // setLatestTransactions(sorted.slice(0, 5));
 
     // ✅ Calculate category-wise spending
     const expenseTransactions = dummyTransactions.filter(txn => txn.type === 'Debit');
@@ -122,6 +142,7 @@ export default function HomeScreen({ navigation }) {
     setCategoryData(categoryDataWithColors);
   }, []);
 
+
   const openChat = () => {
     setChatVisible(true);
     Animated.timing(animation, {
@@ -145,15 +166,27 @@ export default function HomeScreen({ navigation }) {
     const hour = new Date().getHours();
 
     if (hour >= 5 && hour < 12) {
-      return { text: "Good Morning"};
+      return { text: "Good Morning" };
     } else if (hour >= 12 && hour < 17) {
       return { text: "Good Afternoon" };
     } else {
-      return { text: "Good Evening"};
+      return { text: "Good Evening" };
     }
   };
 
   const greeting = getGreeting();
+
+  const loadingIndicator = () => {
+    return (
+      <View>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    )
+  }
+
+  const ViewAllTransactions = ()=>{
+    navigation.navigate('Transactions', {"userId": profile.id})
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -165,9 +198,8 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.avatarCircle}>
               <Text style={styles.avatarText}>
                 {profile
-                  ? `${profile.first_name?.[0] || ''}${
-                      profile.last_name?.[0] || ''
-                    }`
+                  ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''
+                  }`
                   : 'U'}
               </Text>
             </View>
@@ -325,27 +357,33 @@ export default function HomeScreen({ navigation }) {
             </View>
           )}
         </View>
-
         {/* ✅ Latest Transactions Section */}
-        <View style={styles.transactionsSection}>
-          <Text style={styles.sectionTitle}>Latest Transactions</Text>
-          {latestTransactions.map((txn, index) => (
-            <View key={index} style={styles.transactionItem}>
-              <View>
-                <Text style={styles.transactionTitle}>{txn.remark}</Text>
-                <Text style={styles.transactionDate}>{txn.date}</Text>
-              </View>
-              <Text
-                style={[
-                  styles.transactionAmount,
-                  { color: txn.type === 'Credit' ? 'green' : 'red' },
-                ]}
-              >
-                {txn.type === 'Credit' ? '+' : '-'}₹{txn.amount}
-              </Text>
+        {loading ? loadingIndicator :
+          <View style={styles.transactionsSection}>
+            <View style={{flexDirection:'row', alignItems:'center', justifyContent:"space-between"}} >
+              <Text style={styles.sectionTitle}>Latest Transactions</Text>
+                <TouchableOpacity style={{flexDirection: 'row', alignItems:'center', justifyContent:"space-between"}} onPress={ViewAllTransactions} >
+                  <Text style={{fontFamily:'bold', color:Colors.blueDark, fontWeight:800}} >View all </Text>
+                  <Feather name={'chevron-right'} size={24} color={Colors.blueDark} />
+                </TouchableOpacity>
             </View>
-          ))}
-        </View>
+            {latestTransactions.map((txn, index) => (
+              <View key={index} style={styles.transactionItem}>
+                <View>
+                  <Text style={styles.transactionTitle}>{txn.category.transaction_type}</Text>
+                  <Text style={styles.transactionDate}>{txn.txn_date}</Text>
+                </View>
+                <Text
+                  style={[
+                    styles.transactionAmount,
+                    { color: txn.amount > 0 ? 'green' : 'red' },
+                  ]}
+                >
+                  {txn.amount > 0 ? '+' : '-'}₹{txn.amount}
+                </Text>
+              </View>
+            ))}
+          </View>}
       </ScrollView>
 
       {/* FLOATING ACTION BUTTON (AI Chatbot) */}
