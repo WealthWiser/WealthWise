@@ -481,6 +481,14 @@ export default function HomeScreen({ navigation }) {
               </View>
             </View>
           ))}
+
+          {/* 🔗 View All Transactions Link */}
+          <TouchableOpacity
+            style={styles.viewAllButton}
+            onPress={() => navigation.navigate('Transactions')}
+          >
+            <Text style={styles.viewAllText}>View All Transactions →</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -833,6 +841,16 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     textTransform: 'uppercase',
     fontWeight: '500',
+  },
+  viewAllButton: {
+    marginTop: 10,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  viewAllText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    color: Colors.primary,
   },
 
   // Chatbot FAB and Modal Styles
