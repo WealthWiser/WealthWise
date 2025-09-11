@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   StatusBar,
-  TouchableOpacity, 
+  TouchableOpacity,
   ScrollView,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
@@ -134,7 +134,7 @@ const ProfileScreen = ({ navigation }) => {
           >
             <View style={styles.optionRow}>
               <Feather name="file-text" size={20} color="#333" />
-              <Text style={styles.optionText}>Upload Transactions (CSV)</Text>
+              <Text style={styles.optionText}>Upload Transactions (PDF)</Text>
             </View>
           </TouchableOpacity>
         </View>
