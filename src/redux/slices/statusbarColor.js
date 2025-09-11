@@ -24,5 +24,5 @@ export const statusBarColorSlice = createSlice({
     },
 });
 
-export const { changeStatusBarColorTop, changeStatusBarColorBot } = statusBarColorSlice.actions;
+export const { changeStatusBarColorTop, changeStatusBarColorBot, changeSStatusBarTextStyle } = statusBarColorSlice.actions;
 export default statusBarColorSlice.reducer;

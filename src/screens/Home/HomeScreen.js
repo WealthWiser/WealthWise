@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryDeep,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
 
   // Featured Balance Card
   cardBalance: {
-    backgroundColor: Colors.primaryDark,
+    backgroundColor: Colors.primaryDeep,
     padding: Spacing.lg,
   },
   cardBalanceLabel: {

@@ -4,7 +4,8 @@ import Feather from "react-native-vector-icons/Feather";
 import HomeScreen from '../screens/Home/HomeScreen';
 import BudgetScreen from '../screens/Budget/BudgetScreen';
 import SavingsGoalScreen from '../screens/Goals/SavingsGoalScreen';
-import InvestmentScreen from '../screens/Invest/InvestmentScreen'; 
+import InvestmentScreen from '../screens/Invest/InvestmentScreen';
+import { Colors, Fonts } from "../utils/theme";
 
 const Tab = createBottomTabNavigator();
 
@@ -29,8 +30,18 @@ const BottomTabNavigator = () => {
 
           return <Feather name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: "#288cfa", // your theme primary
+        tabBarActiveTintColor: Colors.primary, // your theme primary
         tabBarInactiveTintColor: "gray",
+        tabBarLabelStyle: {
+          fontSize:12,
+          fontFamily: Fonts.primary,
+        },
+        tabBarStyle:{
+          backgroundColor: Colors.neutralBackground,
+          // position: 'absolute',
+          height: 55,
+        }
+
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
