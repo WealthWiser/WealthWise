@@ -108,17 +108,16 @@ export const calculateBudgetSpending = createAsyncThunk(
   async ({ userId, budgets }, { rejectWithValue }) => {
     try {
       const spentAmounts = {};
-      
-      // Safety check for budgets array
+
       if (!Array.isArray(budgets) || budgets.length === 0) {
         console.log('No budgets to process');
         return {};
       }
-      
+
       for (const budget of budgets) {
         try {
           console.log(`Processing budget: ${budget.category}`);
-          
+
           const { data: transactions, error } = await supabase
             .from('transactions')
             .select('amount, txn_date, category')
@@ -128,12 +127,14 @@ export const calculateBudgetSpending = createAsyncThunk(
             .lt('amount', 0);
 
           if (error) {
-            console.warn(`Error fetching transactions for budget ${budget.id}:`, error.message);
+            console.warn(
+              `Error fetching transactions for budget ${budget.id}:`,
+              error.message,
+            );
             spentAmounts[budget.id] = 0;
             continue;
           }
 
-          // Safety check for transactions
           if (!transactions || !Array.isArray(transactions)) {
             console.log(`No transactions found for budget ${budget.category}`);
             spentAmounts[budget.id] = 0;
@@ -142,12 +143,15 @@ export const calculateBudgetSpending = createAsyncThunk(
 
           console.log(`Found ${transactions.length} transactions`);
 
-          // For demo purposes - if you don't have real data, use mock values
+          // Demo: mock spending if no transactions
           if (transactions.length === 0) {
-            // Mock some spending for demo
-            const mockSpending = Math.random() * budget.amount * 0.8; // Random 0-80% of budget
-            spentAmounts[budget.id] = mockSpending;
-            console.log(`Using mock spending: ${mockSpending} for ${budget.category}`);
+            const mockSpending = Math.random() * budget.amount * 0.8;
+            spentAmounts[budget.id] = Number(mockSpending.toFixed(2));
+            console.log(
+              `Using mock spending: ${spentAmounts[budget.id]} for ${
+                budget.category
+              }`,
+            );
             continue;
           }
 
@@ -155,36 +159,38 @@ export const calculateBudgetSpending = createAsyncThunk(
           const categoryTransactions = transactions.filter(txn => {
             try {
               const categoryData = txn?.category;
-              
+
               if (!categoryData || typeof categoryData !== 'object') {
                 return budget.category.toLowerCase().includes('other');
               }
 
-              const transactionCategory = (categoryData.category || '').toLowerCase().trim();
+              const transactionCategory = (categoryData.category || '')
+                .toLowerCase()
+                .trim();
               const budgetCategory = budget.category.toLowerCase().trim();
-              
-              // Simple keyword matching for demo
+
               const categoryMap = {
-                'food': ['grocery', 'eating', 'restaurant', 'food', 'bakery'],
-                'transport': ['fuel', 'gas', 'station', 'transport'],
-                'shopping': ['store', 'shop', 'clothing', 'department'],
-                'entertainment': ['theatre', 'movie', 'entertainment'],
-                'utilities': ['electric', 'utility', 'water', 'gas'],
-                'healthcare': ['hospital', 'medical', 'pharmacy', 'drug'],
-                'other': ['unknown', 'misc']
+                food: ['grocery', 'eating', 'restaurant', 'food', 'bakery'],
+                transport: ['fuel', 'gas', 'station', 'transport'],
+                shopping: ['store', 'shop', 'clothing', 'department'],
+                entertainment: ['theatre', 'movie', 'entertainment'],
+                utilities: ['electric', 'utility', 'water', 'gas'],
+                healthcare: ['hospital', 'medical', 'pharmacy', 'drug'],
+                other: ['unknown', 'misc'],
               };
 
-              // Find matching keywords
               for (const [key, keywords] of Object.entries(categoryMap)) {
                 if (budgetCategory.includes(key)) {
-                  return keywords.some(keyword => transactionCategory.includes(keyword));
+                  return keywords.some(keyword =>
+                    transactionCategory.includes(keyword),
+                  );
                 }
               }
 
-              // Fallback: partial match
-              return transactionCategory.includes(budgetCategory) || 
-                     budgetCategory.includes(transactionCategory);
-              
+              return (
+                transactionCategory.includes(budgetCategory) ||
+                budgetCategory.includes(transactionCategory)
+              );
             } catch (err) {
               console.warn('Error processing transaction:', err);
               return false;
@@ -196,23 +202,28 @@ export const calculateBudgetSpending = createAsyncThunk(
             return sum + amount;
           }, 0);
 
-          spentAmounts[budget.id] = totalSpent;
-          console.log(`${budget.category}: ₹${totalSpent} spent (${categoryTransactions.length} transactions)`);
-
+          spentAmounts[budget.id] = Number(totalSpent.toFixed(2));
+          console.log(
+            `${budget.category}: ₹${spentAmounts[budget.id]} spent (${
+              categoryTransactions.length
+            } transactions)`,
+          );
         } catch (budgetError) {
-          console.error(`Error processing budget ${budget.category}:`, budgetError);
+          console.error(
+            `Error processing budget ${budget.category}:`,
+            budgetError,
+          );
           spentAmounts[budget.id] = 0;
         }
       }
 
       console.log('Final spent amounts:', spentAmounts);
       return spentAmounts;
-      
     } catch (err) {
       console.error('Error in calculateBudgetSpending:', err);
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 const budgetsSlice = createSlice({
@@ -232,7 +243,7 @@ const budgetsSlice = createSlice({
     },
     updateSpentAmount: (state, action) => {
       const { budgetId, amount } = action.payload;
-      state.spentAmounts[budgetId] = amount;
+      state.spentAmounts[budgetId] = Number(amount.toFixed(2));
     },
   },
   extraReducers: builder => {
