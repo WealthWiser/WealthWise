@@ -7,8 +7,9 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { StatusBar } from 'react-native';
 import { Colors } from './src/utils/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// ✅ This one uses hooks (inside Provider)
+
 const MainApp = () => {
   const statusBarColors = useSelector((state) => state.statusBarColor);
 
@@ -34,11 +35,13 @@ const MainApp = () => {
   );
 };
 
-// ✅ Wrap MainApp in ReduxProvider
+// ✅ Wrap your entire app with GestureHandlerRootView at the root
 export default function App() {
   return (
-    <ReduxProvider store={store}>
-      <MainApp />
-    </ReduxProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <ReduxProvider store={store}>
+        <MainApp />
+      </ReduxProvider>
+    </GestureHandlerRootView>
   );
 }

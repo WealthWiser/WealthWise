@@ -139,38 +139,111 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Support & Legal */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support & Legal</Text>
+      {/* Support & Legal */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Support & Legal</Text>
 
-          <TouchableOpacity style={styles.optionCard}>
-            <View style={styles.optionRow}>
-              <Feather name="help-circle" size={20} color="#333" />
-              <Text style={styles.optionText}>Help & Support</Text>
-            </View>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.optionCard}
+          onPress={() =>
+            navigation.navigate('InfoScreen', {
+              title: 'Help & Support',
+              content: 'Find answers to your questions and get in touch with our support team.',
+              details: [
+                {
+                  heading: 'FAQs',
+                  body: 'Common questions and answers:',
+                  list: [
+                    'How do I upload my transactions?',
+                    'How can I reset my password?',
+                    'How do I take the risk analysis test?',
+                  ],
+                },
+                {
+                  heading: 'Contact',
+                  body: 'Reach us via:',
+                  list: ['Email: support@wealthwise.com', 'Phone: +91 98765 43210'],
+                },
+              ],
+            })
+          }
+        >
+          <View style={styles.optionRow}>
+            <Feather name="help-circle" size={20} color="#333" />
+            <Text style={styles.optionText}>Help & Support</Text>
+          </View>
+        </TouchableOpacity>
 
-          <TouchableOpacity style={styles.optionCard}>
-            <View style={styles.optionRow}>
-              <Feather name="info" size={20} color="#333" />
-              <Text style={styles.optionText}>About WealthWise</Text>
-            </View>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.optionCard}
+          onPress={() =>
+            navigation.navigate('InfoScreen', {
+              title: 'About WealthWise',
+              content: 'WealthWise is a personal finance app to track expenses, manage budgets, and analyze risk.',
+              details: [
+                {
+                  heading: 'Mission',
+                  body: 'Empower users to make smarter financial decisions.',
+                },
+                {
+                  heading: 'Features',
+                  list: [
+                    'Track expenses and income',
+                    'Set budgets and monitor progress',
+                    'Analyze risk profile',
+                  ],
+                },
+              ],
+            })
+          }
+        >
+          <View style={styles.optionRow}>
+            <Feather name="info" size={20} color="#333" />
+            <Text style={styles.optionText}>About WealthWise</Text>
+          </View>
+        </TouchableOpacity>
 
-          <TouchableOpacity style={styles.optionCard}>
-            <View style={styles.optionRow}>
-              <Feather name="shield" size={20} color="#333" />
-              <Text style={styles.optionText}>Terms & Privacy</Text>
-            </View>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.optionCard}
+          onPress={() =>
+            navigation.navigate('InfoScreen', {
+              title: 'Terms & Privacy',
+              content: 'All terms, conditions, and privacy policies are described here.',
+              details: [
+                {
+                  heading: 'Terms of Use',
+                  list: [
+                    'Maintain account confidentiality',
+                    'Do not misuse the app',
+                    'Terms may be updated periodically',
+                  ],
+                },
+                {
+                  heading: 'Privacy Policy',
+                  list: [
+                    'Transaction data is secure',
+                    'Data used to improve app features',
+                    'Users can request data deletion',
+                  ],
+                },
+              ],
+            })
+          }
+        >
+          <View style={styles.optionRow}>
+            <Feather name="shield" size={20} color="#333" />
+            <Text style={styles.optionText}>Terms & Privacy</Text>
+          </View>
+        </TouchableOpacity>
 
-          <TouchableOpacity style={styles.optionCard}>
-            <View style={styles.optionRow}>
-              <Feather name="star" size={20} color="#333" />
-              <Text style={styles.optionText}>Rate App</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.optionCard}>
+          <View style={styles.optionRow}>
+            <Feather name="star" size={20} color="#333" />
+            <Text style={styles.optionText}>Rate App</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
 
         {/* Sign Out */}
         <View style={styles.footer}>
