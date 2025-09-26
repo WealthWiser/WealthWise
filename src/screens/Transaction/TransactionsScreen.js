@@ -43,7 +43,7 @@ export default function TransactionsScreen({ route }) {
   const [amountFilter, setAmountFilter] = useState('');
 
   // Manual entry form state
-  const [remark, setRemark] = useState('');
+  const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [txnType, setTxnType] = useState('Credit');
 
@@ -59,13 +59,17 @@ export default function TransactionsScreen({ route }) {
 
     let filtered = [...data];
 
-    // Search filter
+    // ✅ Search filter by category only
     if (search.trim()) {
-      filtered = filtered.filter(t =>
-        (t.remark || t.category?.transaction_type || '')
-          .toLowerCase()
-          .includes(search.trim().toLowerCase()),
-      );
+      filtered = filtered.filter(t => {
+        const categoryName =
+          t.category?.category &&
+          !/^unknown(\s*\(\d+\))?$/i.test(t.category.category.trim())
+            ? t.category.category
+            : 'Other';
+
+        return categoryName.toLowerCase().includes(search.trim().toLowerCase());
+      });
     }
 
     // Type filter
@@ -77,7 +81,7 @@ export default function TransactionsScreen({ route }) {
       });
     }
 
-    // Month filter logic (case-insensitive)
+    // Month filter logic
     if (monthFilter.trim()) {
       filtered = filtered.filter(t => {
         const transactionMonth = new Date(t.txn_date || t.date).toLocaleString(
@@ -96,8 +100,8 @@ export default function TransactionsScreen({ route }) {
       const value = parseFloat(amountFilter.substring(1));
       if (!isNaN(value) && (operator === '>' || operator === '<')) {
         filtered = filtered.filter(t => {
-          const amount = Math.abs(t.amount);
-          return operator === '>' ? amount > value : amount < value;
+          const amt = Math.abs(t.amount);
+          return operator === '>' ? amt > value : amt < value;
         });
       }
     }
@@ -109,7 +113,7 @@ export default function TransactionsScreen({ route }) {
       return dateB - dateA;
     });
 
-    // Calculate monthly total from original data
+    // Calculate monthly total (debits only)
     const now = new Date();
     const currentMonthTotal = data
       .filter(t => {
@@ -128,23 +132,22 @@ export default function TransactionsScreen({ route }) {
     };
   }, [data, search, typeFilter, monthFilter, amountFilter]);
 
-  // Handle manual transaction add (local only for now)
+  // Handle manual transaction add
   const handleAddTransaction = () => {
-    if (!remark || !amount) return;
+    if (!category || !amount) return;
     const newTxn = {
       id: Date.now(),
-      remark,
       amount: txnType === 'Credit' ? Number(amount) : -Number(amount),
       type: txnType,
       date: new Date().toLocaleDateString(),
       txn_date: new Date().toISOString(),
-      category: { transaction_type: remark },
-      balance: 0, // Will be calculated properly in real implementation
+      category: { category }, // ✅ only category now
+      balance: 0,
     };
-    // NOTE: In future, insert to Supabase instead of local push
+    // NOTE: For now, only local push. Replace with Supabase insert later.
     data.unshift(newTxn);
     setIsModalVisible(false);
-    setRemark('');
+    setCategory('');
     setAmount('');
     setTxnType('Credit');
   };
@@ -360,9 +363,9 @@ export default function TransactionsScreen({ route }) {
             <Text style={styles.modalTitle}>Add Transaction</Text>
             <TextInput
               style={styles.input}
-              placeholder="Remark"
-              value={remark}
-              onChangeText={setRemark}
+              placeholder="Category"
+              value={category}
+              onChangeText={setCategory}
             />
             <TextInput
               style={styles.input}
