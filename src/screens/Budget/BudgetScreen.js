@@ -1,303 +1,258 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FAB } from 'react-native-paper';
-import Feather from 'react-native-vector-icons/Feather';
-import { Colors, Spacing, FontSizes, Fonts, FontWeights } from '../../utils/theme';
+import { FAB, ActivityIndicator, Snackbar } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
+import { supabase } from '../../lib/supabase';
 
-const demoBudgets = [
-  {
-    id: '1',
-    category: 'Groceries',
-    allocated: 10000,
-    spent: 6200,
-    icon: 'shopping-cart',
-    color: Colors.accentTeal,
-  },
-  {
-    id: '2',
-    category: 'Entertainment',
-    allocated: 5000,
-    spent: 3300, // Increased spending for AI insight
-    icon: 'film',
-    color: Colors.accentPink,
-  },
-  {
-    id: '3',
-    category: 'Transport',
-    allocated: 3000,
-    spent: 3100,
-    icon: 'truck',
-    color: Colors.accentCoral,
-  },
-  {
-    id: '4',
-    category: 'Utilities',
-    allocated: 4000,
-    spent: 1500,
-    icon: 'home',
-    color: Colors.primaryDark,
-  }
-];
+import {
+  fetchBudgets,
+  createBudget,
+  updateBudget,
+  deleteBudget,
+  calculateBudgetSpending,
+} from '../../redux/slices/budgetSlice';
 
-const BudgetListItem = ({ item }) => {
-  const { category, allocated, spent, icon, color } = item;
-  const progress = spent / allocated;
-  const remaining = allocated - spent;
-  const isOverspent = progress > 1;
-
-  return (
-    <TouchableOpacity style={styles.budgetItemCard} activeOpacity={0.8}>
-      <View style={styles.budgetItemHeader}>
-        <View style={[styles.iconContainer, { backgroundColor: color }]}>
-          <Feather name={icon} size={22} color={Colors.white} />
-        </View>
-        <View style={styles.budgetTextContainer}>
-          <Text style={styles.budgetCategory}>{category}</Text>
-          <Text style={styles.budgetAmount}>
-            ₹{spent.toLocaleString()} / ₹{allocated.toLocaleString()}
-          </Text>
-        </View>
-        <View style={styles.remainingContainer}>
-           <Text style={[styles.remainingText, isOverspent && styles.overspentText]}>
-            {isOverspent ? `₹${Math.abs(remaining).toLocaleString()} Over` : `₹${remaining.toLocaleString()} Left`}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.progressBarContainer}>
-        <View style={[styles.progressBar, { width: `${Math.min(progress, 1) * 100}%`, backgroundColor: isOverspent ? Colors.accentCoral : color }]} />
-      </View>
-    </TouchableOpacity>
-  );
-};
+import BudgetItem from './components/BudgetItem';
+import BudgetFormModal from './components/BudgetFormModal';
+import BudgetSummary from './components/BudgetSummary';
+import EmptyState from './components/EmptyState';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  Fonts,
+  FontWeights,
+} from '../../utils/theme';
 
 const BudgetScreen = () => {
-  const [budgets] = useState(demoBudgets);
+  const dispatch = useDispatch();
+  const {
+    data: budgets,
+    spentAmounts,
+    loading,
+    creating,
+    updating,
+  } = useSelector(state => state.budgets);
+  const { data: transactions } = useSelector(state => state.transactions);
+
+  const [showModal, setShowModal] = useState(false);
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  useEffect(() => {
+    const fetchUserAndBudgets = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        dispatch(fetchBudgets(user.id));
+      }
+    };
+    fetchUserAndBudgets();
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (userId && budgets.length > 0) {
+      dispatch(calculateBudgetSpending({ userId, budgets }));
+    }
+  }, [dispatch, userId, budgets, transactions]);
 
   const summary = useMemo(() => {
-    const totalAllocated = budgets.reduce((sum, b) => sum + b.allocated, 0);
-    const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
+    const totalAllocated = budgets.reduce((sum, b) => sum + b.amount, 0);
+    const totalSpent = Object.values(spentAmounts).reduce(
+      (sum, spent) => sum + spent,
+      0,
+    );
     const totalRemaining = totalAllocated - totalSpent;
-    return { totalAllocated, totalSpent, totalRemaining };
-  }, [budgets]);
+    const activeCount = budgets.length;
+    const overdueCount = budgets.filter(
+      b => new Date(b.end_date) < new Date(),
+    ).length;
+    return {
+      totalAllocated,
+      totalSpent,
+      totalRemaining,
+      activeCount,
+      overdueCount,
+    };
+  }, [budgets, spentAmounts]);
+
+  const handleRefresh = async () => {
+    if (userId) {
+      setRefreshing(true);
+      await dispatch(fetchBudgets(userId));
+      setRefreshing(false);
+    }
+  };
+
+  const handleSaveBudget = async budgetData => {
+    try {
+      if (editingBudget) {
+        await dispatch(
+          updateBudget({ budgetId: editingBudget.id, budgetData }),
+        ).unwrap();
+        setSnackbarMessage('Budget updated successfully!');
+      } else {
+        await dispatch(createBudget({ userId, budgetData })).unwrap();
+        setSnackbarMessage('Budget created successfully!');
+      }
+      setShowModal(false);
+      setEditingBudget(null);
+      setSnackbarVisible(true);
+    } catch (error) {
+      Alert.alert('Error', error || 'Failed to save budget');
+    }
+  };
+
+  const handleDeleteBudget = budgetId => {
+    Alert.alert('Delete Budget', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await dispatch(deleteBudget(budgetId)).unwrap();
+            setSnackbarMessage('Budget deleted successfully!');
+            setSnackbarVisible(true);
+          } catch (error) {
+            Alert.alert('Error', error || 'Failed to delete budget');
+          }
+        },
+      },
+    ]);
+  };
+
+  const openEditModal = budget => {
+    setEditingBudget(budget);
+    setShowModal(true);
+  };
+
+  const openCreateModal = () => {
+    setEditingBudget(null);
+    setShowModal(true);
+  };
+
+  if (loading && budgets.length === 0) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Loading budgets...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Monthly Budgets</Text>
-        <Text style={styles.subtitle}>Here is your financial overview for the month.</Text>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        <Text style={styles.title}>Budget Management</Text>
+        <Text style={styles.subtitle}>
+          Track and manage your spending limits
+        </Text>
 
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>Allocated</Text>
-            <Text style={styles.summaryValue}>₹{summary.totalAllocated.toLocaleString()}</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>Spent</Text>
-            <Text style={styles.summaryValue}>₹{summary.totalSpent.toLocaleString()}</Text>
-          </View>
-           <View style={styles.summaryDivider} />
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>Remaining</Text>
-            <Text style={[styles.summaryValue, {color: summary.totalRemaining < 0 ? Colors.accentCoral : Colors.accentTeal}]}>
-              ₹{summary.totalRemaining.toLocaleString()}
-            </Text>
-          </View>
-        </View>
+        <BudgetSummary summary={summary} hasBudgets={budgets.length > 0} />
 
-        {/* --- [AI FEATURE] AI Insight Card --- */}
-        <View style={styles.aiInsightCard}>
-            <Feather name="zap" size={24} color={Colors.primaryDeep} style={styles.aiIcon} />
-            <View style={styles.aiTextContainer}>
-                <Text style={styles.aiTitle}>AI Financial Insight</Text>
-                <Text style={styles.aiContent}>
-                    Your spending on 'Entertainment' is 25% higher than last month. Consider reallocating funds to stay on track with your savings goals.
-                </Text>
-            </View>
-        </View>
-        {/* --- End AI Feature --- */}
-
-
-        <Text style={styles.listHeader}>Category Breakdown</Text>
-        {budgets.map(budget => (
-          <BudgetListItem key={budget.id} item={budget} />
-        ))}
+        <Text style={styles.listHeader}>Your Budgets</Text>
+        {budgets.length === 0 ? (
+          <EmptyState />
+        ) : (
+          budgets.map(budget => (
+            <BudgetItem
+              key={budget.id}
+              item={budget}
+              spent={spentAmounts[budget.id] || 0}
+              onEdit={openEditModal}
+              onDelete={handleDeleteBudget}
+            />
+          ))
+        )}
       </ScrollView>
 
       <FAB
         icon="plus"
         style={styles.fab}
         color={Colors.white}
-        onPress={() => console.log('Add new budget')}
+        onPress={openCreateModal}
+        loading={creating}
       />
+
+      <BudgetFormModal
+        visible={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setEditingBudget(null);
+        }}
+        budget={editingBudget}
+        onSave={handleSaveBudget}
+        loading={creating || updating}
+      />
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={{ backgroundColor: Colors.accentTeal }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.backgroundLight,
-  },
-  container: {
-    padding: Spacing.md,
-    paddingBottom: 100,
+  safeArea: { flex: 1, backgroundColor: Colors.backgroundLight },
+  container: { padding: Spacing.md, paddingBottom: 100 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: {
+    marginTop: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.textPrimary,
   },
   title: {
     fontSize: FontSizes.xl,
-    fontFamily: Fonts.heading,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    color: Colors.textDark,
+    marginBottom: Spacing.sm,
+    fontFamily: Fonts.bold,
   },
   subtitle: {
     fontSize: FontSizes.md,
-    fontFamily: Fonts.primary,
-    color: Colors.grayDark,
+    color: Colors.textSecondary,
     marginBottom: Spacing.lg,
+    fontFamily: Fonts.regular,
   },
-  summaryCard: {
-    backgroundColor: Colors.primaryDeep,
-    borderRadius: 16,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    shadowColor: Colors.white,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  summaryItem: {
-    alignItems: 'center',
-  },
-  summaryLabel: {
-    fontFamily: Fonts.primary,
-    fontSize: FontSizes.sm,
-    color: Colors.white,
-    marginBottom: Spacing.xs,
-  },
-  summaryValue: {
-    fontFamily: Fonts.heading,
-    fontSize: FontSizes.lg,
-    fontWeight: FontWeights.semiBold,
-    color: Colors.white,
-  },
-  summaryDivider: {
-      width: 1,
-      height: '60%',
-      backgroundColor: Colors.neutralBackground,
-  },
-  // --- AI Insight Card Styles ---
-  aiInsightCard: {
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: 12,
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.primaryLight,
-  },
-  aiIcon: {
-      marginRight: Spacing.md,
-  },
-  aiTextContainer: {
-      flex: 1,
-  },
-  aiTitle: {
-      fontFamily: Fonts.heading,
-      fontWeight: FontWeights.bold,
-      color: Colors.primaryDeep,
-      fontSize: FontSizes.md,
-      marginBottom: Spacing.xs,
-  },
-  aiContent: {
-      fontFamily: Fonts.primary,
-      color: Colors.textPrimary,
-      fontSize: FontSizes.sm,
-      lineHeight: 20,
-  },
-  // ---
   listHeader: {
     fontSize: FontSizes.lg,
-    fontFamily: Fonts.heading,
-    fontWeight: FontWeights.semiBold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
-  budgetItemCard: {
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: Spacing.md,
-    marginBottom: Spacing.md,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  budgetItemHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  budgetTextContainer: {
-    flex: 1,
-  },
-  budgetCategory: {
-    fontSize: FontSizes.md,
-    fontFamily: Fonts.heading,
-    fontWeight: FontWeights.semiBold,
-    color: Colors.textPrimary,
-  },
-  budgetAmount: {
-    fontSize: FontSizes.sm,
-    fontFamily: Fonts.primary,
-    color: Colors.grayDark,
-    marginTop: 2,
-  },
-  remainingContainer: {
-    alignItems: 'flex-end',
-  },
-  remainingText: {
-    fontSize: FontSizes.sm,
-    fontFamily: Fonts.heading,
-    fontWeight: FontWeights.medium,
-    color: Colors.grayDark,
-  },
-  overspentText: {
-    color: Colors.accentCoral,
     fontWeight: FontWeights.bold,
-  },
-  progressBarContainer: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.neutralBackground,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 4,
+    color: Colors.textDark,
+    marginBottom: Spacing.md,
+    fontFamily: Fonts.bold,
   },
   fab: {
     position: 'absolute',
-    margin: Spacing.lg,
+    margin: 16,
     right: 0,
     bottom: 0,
     backgroundColor: Colors.primary,
-    borderRadius: 28,
   },
 });
 
