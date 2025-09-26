@@ -1,121 +1,405 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
-import { TextInput, Button, Text} from 'react-native-paper';
-import { supabase } from '../../lib/supabase';
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from 'react-native';
+import { TextInput, Button, Text } from 'react-native-paper';
+import Feather from 'react-native-vector-icons/Feather';
+import {
+  changeStatusBarColorTop,
+  changeStatusBarColorBot,
+} from '../../redux/slices/statusbarColor';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { supabase } from '../../lib/supabase';
+import { useDispatch } from 'react-redux';
+import { Colors } from '../../utils/theme';
+import { useFocusEffect } from '@react-navigation/native';
+
+// Validation schema
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email format')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+});
+
 const LoginScreen = ({ navigation }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState(null);
+  const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(changeStatusBarColorTop('#4981f9ff'));
+      dispatch(changeStatusBarColorBot('#eff6ffff'));
 
-    const handleLogin = async () => {
-        setLoading(true);
-        setErrorMessage(null);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            setErrorMessage(error.message);  // Show error message
-        }
-        setLoading(false);
+      return () => {
+        dispatch(changeStatusBarColorTop(Colors.neutralBackground));
+        dispatch(changeStatusBarColorBot(Colors.neutralBackground));
+      };
+    }, [dispatch]),
+  );
 
-    };
-    const LoginSchema = Yup.object().shape({
-        email: Yup.string().email("Invalid email format").required("Email is required"),
-        password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-    })
-    return (
-        <KeyboardAvoidingView behavior="padding" style={styles.container}>
-            <Formik
+  return (
+    <View style={styles.root}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Top Blue Background */}
+          <View style={styles.bgTop} />
+          <View style={styles.container}>
+            <Text style={styles.welcome}>Welcome</Text>
+            <View style={styles.card}>
+              <Formik
                 initialValues={{ email: '', password: '' }}
                 validationSchema={LoginSchema}
-                onSubmit={async (values, { setSubmitting, setErrors }) => {
-                    const { error } = await supabase.auth.signInWithPassword({email: values.email, password: values.password });
-                    if (error) {
-                        setErrors({ email: error.message });
-                    }
-                    setSubmitting(false);
+                onSubmit={async (values, { setSubmitting, setStatus }) => {
+                  setStatus('');
+                  const { error } = await supabase.auth.signInWithPassword({
+                    email: values.email,
+                    password: values.password,
+                  });
+                  if (error) setStatus(error.message);
+                  else setStatus('');
+                  setSubmitting(false);
                 }}
-            >
-                {({ handleChange, handleSubmit, setFieldValue, values, errors, touched }) => (
-                    <>
-                        <Text variant='titleLarge' style={styles.title}>Welcome to WealthWise 💰</Text>
+              >
+                {({
+                  handleChange,
+                  handleSubmit,
+                  values,
+                  errors,
+                  touched,
+                  isSubmitting,
+                  status,
+                  setFieldTouched,
+                }) => (
+                  <>
+                    {/* Email Field */}
+                    <Text style={styles.label}>Email</Text>
+                    <View style={styles.inputOuter}>
+                      <TextInput
+                        placeholder="example@example.com"
+                        value={values.email}
+                        onChangeText={handleChange('email')}
+                        onBlur={() => setFieldTouched('email')}
+                        mode="flat"
+                        style={styles.input}
+                        theme={{
+                          colors: {
+                            background: 'transparent',
+                            text: '#28322e',
+                            placeholder: '#8dbba7',
+                          },
+                        }}
+                        underlineColor="transparent"
+                        placeholderTextColor="#8d9fbbff"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                      />
+                    </View>
+                    {touched.email && errors.email && (
+                      <Text style={styles.errorText}>{errors.email}</Text>
+                    )}
 
-                        <TextInput
-                            label="Email"
-                            value={values.email}
-                            onChangeText={handleChange('email')}
-                            mode="outlined"
-                            keyboardType="email-address"
-                            style={styles.input}
-                            />
-                        {touched.email && errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-                        <TextInput
-                            label="Password"
-                            value={values.password}
-                            onChangeText={handleChange('password')}
-                            mode="outlined"
-                            secureTextEntry
-                            style={styles.input}
-                            />
-                        {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-                        {/* {errorMessage && (
-                            <Text style={styles.errorText}>{errorMessage}</Text>
-                        )} */}
-                        <Button
-                            mode="contained"
-                            onPress={handleSubmit}
-                            loading={values.isSubmiting}
-                            style={styles.button}
-                            >
-                            Login
-                        </Button>
+                    {/* Password Field */}
+                    <Text style={styles.label}>Password</Text>
+                    <View style={styles.inputOuter}>
+                      <TextInput
+                        placeholder="••••••••"
+                        value={values.password}
+                        onChangeText={handleChange('password')}
+                        onBlur={() => setFieldTouched('password')}
+                        mode="flat"
+                        style={styles.input}
+                        secureTextEntry={!showPassword}
+                        theme={{
+                          colors: {
+                            background: 'transparent',
+                            text: '#28322e',
+                            placeholder: '#8dbba7',
+                          },
+                        }}
+                        placeholderTextColor="#8d9fbbff"
+                        underlineColor="transparent"
+                      />
+                      <TouchableOpacity
+                        style={styles.eyeButton}
+                        onPress={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <Feather name="eye" size={22} color="#8d9fbbff" />
+                        ) : (
+                          <Feather name="eye-off" size={22} color="#8d9fbbff" />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                    {touched.password && errors.password && (
+                      <Text style={styles.errorText}>{errors.password}</Text>
+                    )}
+                    {status ? (
+                      <Text style={styles.errorText}>{status}</Text>
+                    ) : null}
 
-                        <Text style={styles.registerText}>
-                            Don’t have an account?{' '}
-                            <Text onPress={() => navigation.navigate('Register')} style={styles.link}>
-                                Register
-                            </Text>
-                        </Text>
-                    </>
+                    {/* Log In Button */}
+                    <Button
+                      mode="contained"
+                      onPress={handleSubmit}
+                      loading={isSubmitting}
+                      style={styles.loginBtn}
+                      labelStyle={styles.loginLabel}
+                      contentStyle={{ height: 50 }}
+                      uppercase={false}
+                    >
+                      Log In
+                    </Button>
+
+                    {/* Forgot Password */}
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('ForgotPassword')}
+                    >
+                      <Text style={styles.forgot}>Forgot Password?</Text>
+                    </TouchableOpacity>
+
+                    {/* Sign Up Button */}
+                    <Button
+                      mode="contained"
+                      onPress={() => navigation.navigate('Register')}
+                      style={styles.signUpBtn}
+                      labelStyle={styles.signUpLabel}
+                      contentStyle={{ height: 50 }}
+                      uppercase={false}
+                    >
+                      Sign Up
+                    </Button>
+
+                    {/* Fingerprint Access */}
+                    {/* <Text style={styles.fingerprint}>
+                      Use <Text style={styles.fingerprintHighlight}>Fingerprint</Text> To Access
+                    </Text> */}
+
+                    {/* Social Login */}
+                    <Text style={styles.orSignUp}>or sign up with</Text>
+                    <View style={styles.socialRow}>
+                      <TouchableOpacity style={styles.socialButton}>
+                        <Image
+                          source={require('../../assets/facebook.png')}
+                          style={{
+                            width: 35,
+                            height: 35,
+                            resizeMode: 'contain',
+                          }}
+                        />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity style={styles.socialButton}>
+                        <Image
+                          source={require('../../assets/google.png')}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            resizeMode: 'contain',
+                          }}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </>
                 )}
-
-            </Formik>
-        </KeyboardAvoidingView>
-    );
+              </Formik>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        justifyContent: 'center',
-    },
-    title: {
-        fontSize: 26,
-        textAlign: 'center',
-        marginBottom: 32,
-    },
-    input: {
-        marginBottom: 16,
-    },
-    button: {
-        marginTop: 16,
-    },
-    registerText: {
-        marginTop: 24,
-        textAlign: 'center',
-    },
-    link: {
-        color: '#6200ee',
-        fontWeight: 'bold',
-    },
-    errorText: {
-        color: 'red',
-        fontSize: 13,
-        marginTop: -1,
-        marginBottom: 10,
-    },
+  root: {
+    flex: 1,
+    backgroundColor: '#eff6ffff',
+  },
+  bgTop: {
+    backgroundColor: '#4981f9ff',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+    borderBottomLeftRadius: 54,
+    borderBottomRightRadius: 54,
+    zIndex: 1,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    zIndex: 2,
+  },
+  welcome: {
+    fontSize: 31,
+    fontWeight: '700',
+    color: '#ffffffff',
+    textAlign: 'center',
+    marginTop: 65,
+    marginBottom: 20,
+    letterSpacing: 0.5,
+  },
+  card: {
+    backgroundColor: '#eff6ffff',
+    borderTopLeftRadius: 46,
+    borderTopRightRadius: 46,
+    paddingVertical: 25,
+    paddingHorizontal: 28,
+    // flex: 1,
+    marginTop: 50,
+    zIndex: 2,
+    // shadowColor: '#000',
+    // shadowOpacity: 0.06,
+    // shadowRadius: 12,
+    // elevation: 6,
+    alignItems: 'center',
+  },
+  label: {
+    color: '#3a4936',
+    fontWeight: '600',
+    fontSize: 15,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+    marginTop: 10,
+    letterSpacing: 0.15,
+  },
+  inputOuter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e5edffff',
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    height: 52,
+    marginBottom: 18,
+    width: '100%',
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    fontSize: 16,
+    color: '#262d33ff',
+    paddingVertical: 0,
+    margin: 0,
+    borderWidth: 0,
+    minHeight: 48,
+  },
+  eyeButton: {
+    paddingLeft: 4,
+    paddingVertical: 2,
+  },
+  errorText: {
+    color: '#cf2b2b',
+    marginBottom: 6,
+    fontSize: 13,
+    marginLeft: 2,
+    alignSelf: 'flex-start',
+  },
+  loginBtn: {
+    backgroundColor: '#4981f9ff',
+    borderRadius: 28,
+    marginTop: 6,
+    marginBottom: 2,
+    width: '87%',
+    alignSelf: 'center',
+    elevation: 0,
+  },
+  loginLabel: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+    color: '#fff',
+  },
+  forgot: {
+    color: '#1469f1ff',
+    fontWeight: '400',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 10,
+    textDecorationLine: 'underline',
+    opacity: 0.8,
+  },
+  signUpBtn: {
+    backgroundColor: '#d9e7ffff',
+    borderRadius: 28,
+    width: '87%',
+    alignSelf: 'center',
+    marginTop: 2,
+    marginBottom: 16,
+    elevation: 0,
+  },
+  signUpLabel: {
+    color: '#086ff6ff',
+    fontWeight: 'bold',
+    fontSize: 17,
+    letterSpacing: 0.5,
+  },
+  fingerprint: {
+    textAlign: 'center',
+    fontSize: 15.5,
+    marginBottom: 3,
+    fontWeight: '400',
+    marginTop: 10,
+    color: '#14271e',
+  },
+  fingerprintHighlight: {
+    color: '#118aqu',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  orSignUp: {
+    textAlign: 'center',
+    fontSize: 13.7,
+    color: '#6f7e87ff',
+    marginBottom: 7,
+    marginTop: 6,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 7,
+    marginTop: 3,
+  },
+  socialButton: {
+    backgroundColor: '#ffffffff',
+    borderRadius: 22,
+    width: 43,
+    height: 43,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.07,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  socialIcon: {
+    fontSize: 22,
+    color: '#2614f0ff',
+    fontWeight: 'bold',
+  },
 });
 
 export default LoginScreen;
