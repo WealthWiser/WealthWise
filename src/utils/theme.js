@@ -57,6 +57,8 @@ const FontSizes = {
 
 const Fonts = {
   primary: 'Lato-Regular',
+  regular: 'Lato-Regular', 
+  bold: 'Lato-Bold',      
   heading: 'Lato-Bold',
   fallback: 'Lato-BlackItalic',
 };

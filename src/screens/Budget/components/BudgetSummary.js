@@ -1,3 +1,4 @@
+// src/screens/Budget/components/BudgetSummary.js
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
@@ -52,7 +53,7 @@ const BudgetSummary = ({ summary, hasBudgets }) => {
       {hasBudgets && (
         <View style={styles.aiInsightCard}>
           <Feather
-            name="zap"
+            name="activity"
             size={24}
             color={Colors.primaryDeep}
             style={styles.aiIcon}
@@ -60,11 +61,20 @@ const BudgetSummary = ({ summary, hasBudgets }) => {
           <View style={styles.aiTextContainer}>
             <Text style={styles.aiTitle}>Budget Insights</Text>
             <Text style={styles.aiContent}>
-              {summary.totalSpent > summary.totalAllocated * 0.8
-                ? "You're approaching your budget limits. Consider reviewing your expenses."
+              {summary.totalSpent > summary.totalAllocated
+                ? `You're over budget by ₹${(
+                    summary.totalSpent - summary.totalAllocated
+                  ).toLocaleString()}. Consider reducing expenses.`
+                : summary.totalSpent > summary.totalAllocated * 0.8
+                ? `You've used ${(
+                    (summary.totalSpent / summary.totalAllocated) *
+                    100
+                  ).toFixed(0)}% of your budget. Monitor your spending closely.`
                 : summary.overdueCount > 0
                 ? `You have ${summary.overdueCount} budget(s) that need renewal.`
-                : "You're staying within your budget limits. Great job!"}
+                : summary.activeCount > 0
+                ? `You're managing ${summary.activeCount} active budgets well. Keep it up!`
+                : 'Create your first budget to start tracking expenses.'}
             </Text>
           </View>
         </View>
@@ -74,7 +84,10 @@ const BudgetSummary = ({ summary, hasBudgets }) => {
 };
 
 const styles = StyleSheet.create({
-  summaryRow: { flexDirection: 'row', marginBottom: Spacing.md },
+  summaryRow: {
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+  },
   summaryCard: {
     backgroundColor: Colors.white,
     borderRadius: 12,
@@ -87,15 +100,15 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
+    color: Colors.textSecondary || Colors.textPrimary, // Fallback if textSecondary doesn't exist
     marginBottom: Spacing.sm,
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.regular || Fonts.primary, // Fallback if regular doesn't exist
   },
   summaryValue: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.bold,
     color: Colors.textDark,
-    fontFamily: Fonts.bold,
+    fontFamily: Fonts.bold || Fonts.heading, // Fallback if bold doesn't exist
   },
   aiInsightCard: {
     backgroundColor: Colors.primaryLight,
@@ -107,20 +120,24 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.primaryDeep,
     borderLeftWidth: 5,
   },
-  aiIcon: { marginRight: Spacing.md },
-  aiTextContainer: { flex: 1 },
+  aiIcon: {
+    marginRight: Spacing.md,
+  },
+  aiTextContainer: {
+    flex: 1,
+  },
   aiTitle: {
     fontSize: FontSizes.md,
     fontWeight: FontWeights.bold,
     color: Colors.primaryDeep,
     marginBottom: Spacing.xs,
-    fontFamily: Fonts.bold,
+    fontFamily: Fonts.bold || Fonts.heading,
   },
   aiContent: {
     fontSize: FontSizes.sm,
     color: Colors.textDark,
     lineHeight: 20,
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.regular || Fonts.primary,
   },
 });
 

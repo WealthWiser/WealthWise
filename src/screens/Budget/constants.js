@@ -1,15 +1,16 @@
+// src/screens/Budget/constants.js
 import { Colors } from '../../utils/theme';
 
 export const CATEGORY_OPTIONS = [
   {
     label: 'Food & Dining',
     value: 'Food & Dining',
-    icon: 'utensils',
+    icon: 'coffee',
     color: Colors.accentTeal,
   },
   {
     label: 'Transportation',
-    value: 'Transportation',
+    value: 'Transportation', 
     icon: 'truck',
     color: Colors.accentCoral,
   },
@@ -42,12 +43,6 @@ export const CATEGORY_OPTIONS = [
     value: 'Education',
     icon: 'book-open',
     color: Colors.primaryDeep,
-  },
-  {
-    label: 'Travel',
-    value: 'Travel',
-    icon: 'map-pin',
-    color: Colors.accentCoral,
   },
   {
     label: 'Other',

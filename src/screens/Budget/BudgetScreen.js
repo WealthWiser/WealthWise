@@ -41,7 +41,10 @@ const BudgetScreen = () => {
     creating,
     updating,
   } = useSelector(state => state.budgets);
-  const { data: transactions } = useSelector(state => state.transactions);
+
+  // Note: This transactions selector is not needed for the budget calculation and was removed
+  // from the second useEffect's dependency array in a previous step.
+  // const { data: transactions } = useSelector(state => state.transactions);
 
   const [showModal, setShowModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
@@ -64,22 +67,28 @@ const BudgetScreen = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (userId && budgets.length > 0) {
+    // Ensure budgets is an array before dispatching the calculation
+    if (userId && Array.isArray(budgets) && budgets.length > 0) {
       dispatch(calculateBudgetSpending({ userId, budgets }));
     }
-  }, [dispatch, userId, budgets, transactions]);
+  }, [dispatch, userId, budgets]);
 
   const summary = useMemo(() => {
-    const totalAllocated = budgets.reduce((sum, b) => sum + b.amount, 0);
+    // FIX #1: Default 'budgets' to an empty array `[]` to prevent .reduce crash
+    const safeBudgets = budgets || [];
+
+    const totalAllocated = safeBudgets.reduce((sum, b) => sum + b.amount, 0);
     const totalSpent = Object.values(spentAmounts).reduce(
       (sum, spent) => sum + spent,
       0,
     );
     const totalRemaining = totalAllocated - totalSpent;
-    const activeCount = budgets.length;
-    const overdueCount = budgets.filter(
+    const activeCount = safeBudgets.length;
+    // FIX #2: Use the safeBudgets array for .filter as well
+    const overdueCount = safeBudgets.filter(
       b => new Date(b.end_date) < new Date(),
     ).length;
+    
     return {
       totalAllocated,
       totalSpent,
@@ -145,7 +154,8 @@ const BudgetScreen = () => {
     setShowModal(true);
   };
 
-  if (loading && budgets.length === 0) {
+  // FIX #3: Handle loading state even if budgets is null initially
+  if (loading && (!budgets || budgets.length === 0)) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
@@ -169,10 +179,12 @@ const BudgetScreen = () => {
           Track and manage your spending limits
         </Text>
 
-        <BudgetSummary summary={summary} hasBudgets={budgets.length > 0} />
+        <BudgetSummary summary={summary} hasBudgets={budgets && budgets.length > 0} />
 
         <Text style={styles.listHeader}>Your Budgets</Text>
-        {budgets.length === 0 ? (
+        
+        {/* FIX #4: Check if budgets is falsy OR empty before trying to map */}
+        {!budgets || budgets.length === 0 ? (
           <EmptyState />
         ) : (
           budgets.map(budget => (
