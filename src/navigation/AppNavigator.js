@@ -12,6 +12,7 @@ import OnboardingScreen from '../screens/Splash/OnboardingScreen';
 import ViewProfileScreen from '../screens/Profile/ViewProfileScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import TransactionsScreen from '../screens/Transaction/TransactionsScreen'; 
+import RiskAnalysisScreen from '../screens/Profile/RiskAnalysis';
 
 const Stack = createNativeStackNavigator();
 
@@ -67,7 +68,8 @@ const AppNavigator = () => {
             <Stack.Screen name="HomeTabs" component={BottomTabNavigator} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="ViewProfile" component={ViewProfileScreen} />
-            <Stack.Screen name="Transactions" component={TransactionsScreen} /> 
+            <Stack.Screen name="Transactions" component={TransactionsScreen} />
+            <Stack.Screen name="RiskAnalysis" component={RiskAnalysisScreen} /> 
             {/* Add other screens that need to be stacked above tabs */}
           </>
         ) : (
