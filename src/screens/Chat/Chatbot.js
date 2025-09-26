@@ -13,7 +13,7 @@ import {
   Easing,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
-
+import { baseurltest, baseurl } from '../../assets/constants/baseurl'
 const ChatBot = () => {
   const [messages, setMessages] = useState([
     { id: 1, type: 'bot', text: '👋 Hi there! How can I assist you today?', anim: new Animated.Value(1) },
@@ -45,9 +45,10 @@ const ChatBot = () => {
     if (!access_token) {
       return "⚠️ You must log in to chat.";
     }
-
+    const baseUrl = baseurl
+    // const baseUrl = baseurltest
     const response = await fetch(
-      "https://wealthwisebackend.onrender.com/chat/query",
+      `${baseUrl}/chat/query`,
       {
         method: "POST",
         headers: {
@@ -145,8 +146,8 @@ const ChatBot = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 140: 80}
     >
