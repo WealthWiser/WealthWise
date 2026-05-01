@@ -1,85 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { supabase } from '../lib/supabase';
-import { ActivityIndicator, View, Text } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { setUserData } from '../redux/slices/userSlice';
-import BottomTabNavigator from './BottomTabNavigator';
-import LoginScreen from '../screens/Authentication/Login';
-import RegisterScreen from '../screens/Authentication/Register';
-import OnboardingScreen from '../screens/Splash/OnboardingScreen';
-import ViewProfileScreen from '../screens/Profile/ViewProfileScreen';
-import ProfileScreen from '../screens/Profile/ProfileScreen';
-import TransactionsScreen from '../screens/Transaction/TransactionsScreen'; 
-import RiskAnalysisScreen from '../screens/Profile/RiskAnalysis';
+import { useSelector } from 'react-redux';
 
-const Stack = createNativeStackNavigator();
+import PublicNavigator from './PublicNavigator';
+import PrivateNavigator from './PrivateNavigator';
+import SplashScreen from './SplashScreen';
 
 const AppNavigator = () => {
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const [session, setSession] = useState(null);
-  const dispatch = useDispatch();
+  const authStatus = useSelector(state => state.auth.status);
+  console.log('[NAV] auth status:', authStatus);
 
-  useEffect(() => {
-    const restoreSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (data?.session) {
-        setSession(data.session);
-        dispatch(
-          setUserData({
-            name: data.session.user.email,
-            income: 0,
-          }),
-        );
-      }
-      setSessionChecked(true);
-    };
-
-    restoreSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession);
-      },
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  if (!sessionChecked) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-        <Text>Checking session...</Text>
-      </View>
-    );
+  if (authStatus === 'loading') {
+    return <SplashScreen />;
   }
-
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{ headerShown: false, animation: 'none' }}
-      >
-        {session ? (
-          <>
-            <Stack.Screen name="HomeTabs" component={BottomTabNavigator} />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="ViewProfile" component={ViewProfileScreen} />
-            <Stack.Screen name="Transactions" component={TransactionsScreen} />
-            <Stack.Screen name="RiskAnalysis" component={RiskAnalysisScreen} /> 
-            {/* Add other screens that need to be stacked above tabs */}
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-          </>
-        )}
-      </Stack.Navigator>
+      {authStatus === 'authenticated' ? (
+        <PrivateNavigator />
+      ) : (
+        <PublicNavigator />
+      )}
     </NavigationContainer>
   );
 };

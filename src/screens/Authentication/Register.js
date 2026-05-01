@@ -19,11 +19,13 @@ import {
   Divider,
 } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { setAuthenticated } from '../../redux/slices/authSlice';
 import moment from 'moment';
 import { Dropdown } from 'react-native-paper-dropdown';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { supabase } from '../../lib/supabase';
+// import { supabase } from '../../lib/supabase';
+import { registerUser } from '../../auth/authActions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import maleIcon from '../../assets/male.png';
 import femaleIcon from '../../assets/female.png';
@@ -101,62 +103,32 @@ const RegisterScreen = ({ navigation }) => {
                   }}
                   validationSchema={RegisterSchema}
                   onSubmit={async (values, { setSubmitting, setErrors }) => {
-                    try {
-                      const { data: signUpData, error } =
-                        await supabase.auth.signUp({
+                    const form = {
                           email: values.email,
                           password: values.password,
-                          options: {
-                            data: {
-                              full_name: values.fullName,
-                              dob: formatDate(values.dob),
-                              gender: values.gender,
-                              country: values.country,
-                            },
-                          },
-                        });
-
-                      if (error) {
-                        setErrors({ email: error.message });
-                        return;
-                      }
-
-                      const userId = signUpData?.user?.id;
-                      const userEmail = signUpData?.user?.email;
-
-                      if (userId) {
-                        const { error: insertError } = await supabase
-                          .from('users')
-                          .insert([
-                            {
-                              id: userId,
-                              email: userEmail,
-                              full_name: values.fullName,
-                              dob: formatDate(values.dob),
-                              gender: values.gender,
-                              country: values.country,
-                            },
-                          ]);
-
-                        if (insertError) {
-                          console.error('Insert error:', insertError.message);
-                        }
-                      }
-                    } catch (e) {
-                      console.error('Unexpected signup error:', e.message);
+                          first_name: values.fullName,
+                          last_name: values.fullName,
+                          gender: values.gender,
+                          country: values.country,
+                          dob: formatDate(values.dob),
+                    }
+                    try {
+                      const access_token = await registerUser(form);
+                      // auto-login after signup
+                      dispatch(setAuthenticated( {access_token: access_token} ));
+                    } catch (err) {
+                      console.log('Register error:', err);
+                        setErrors(
+                          err?.response?.data?.detail ||
+                          err?.message ||
+                          'Register failed'
+                        );
                     } finally {
                       setSubmitting(false);
                     }
                   }}
                 >
-                  {({
-                    handleChange,
-                    handleSubmit,
-                    setFieldValue,
-                    values,
-                    errors,
-                    touched,
-                  }) => (
+                  {({handleChange,handleSubmit,setFieldValue,values,errors,touched}) => (
                     <>
                       <Text style={styles.heading}>Create Your Account</Text>
 

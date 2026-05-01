@@ -16,209 +16,205 @@ import {
 } from '../../redux/slices/statusbarColor';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { supabase } from '../../lib/supabase';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Colors } from '../../utils/theme';
 import { useFocusEffect } from '@react-navigation/native';
-
+import { loginUser } from '../../auth/authActions';
+import { setAuthenticated } from '../../redux/slices/authSlice';
+import { useTheme } from '../../Theme/ThemeProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getUserData } from '../../redux/slices/userSlice';
+import {signIn as GoogleSignin} from '../../auth/googleSignin'
 // Validation schema
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
     .email('Invalid email format')
     .required('Email is required'),
   password: Yup.string()
-    .min(6, 'Password must be at least 6 characters')
+    .min(8, 'Password must be at least 6 characters')
     .required('Password is required'),
 });
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const {colors} = useTheme();
+  const insets = useSafeAreaInsets();
   const [showPassword, setShowPassword] = useState(false);
-  useFocusEffect(
-    React.useCallback(() => {
-      dispatch(changeStatusBarColorTop('#4981f9ff'));
-      dispatch(changeStatusBarColorBot('#eff6ffff'));
 
-      return () => {
-        dispatch(changeStatusBarColorTop(Colors.neutralBackground));
-        dispatch(changeStatusBarColorBot(Colors.neutralBackground));
-      };
-    }, [dispatch]),
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     dispatch(changeStatusBarColorTop('#4981f9ff'));
+  //     dispatch(changeStatusBarColorBot('#eff6ffff'));
+
+  //     return () => {
+  //       dispatch(changeStatusBarColorTop(Colors.neutralBackground));
+  //       dispatch(changeStatusBarColorBot(Colors.neutralBackground));
+  //     };
+  //   }, [dispatch]),
+  // );
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root,{ flex: 1, backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={{flex:1, paddingTop: insets.top }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1 }}
         >
           {/* Top Blue Background */}
           <View style={styles.bgTop} />
-          <View style={styles.container}>
-            <Text style={styles.welcome}>Welcome</Text>
-            <View style={styles.card}>
-              <Formik
-                initialValues={{ email: '', password: '' }}
-                validationSchema={LoginSchema}
-                onSubmit={async (values, { setSubmitting, setStatus }) => {
-                  setStatus('');
-                  const { error } = await supabase.auth.signInWithPassword({
-                    email: values.email,
-                    password: values.password,
-                  });
-                  if (error) setStatus(error.message);
-                  else setStatus('');
-                  setSubmitting(false);
-                }}
-              >
-                {({
-                  handleChange,
-                  handleSubmit,
-                  values,
-                  errors,
-                  touched,
-                  isSubmitting,
-                  status,
-                  setFieldTouched,
-                }) => (
-                  <>
-                    {/* Email Field */}
-                    <Text style={styles.label}>Email</Text>
-                    <View style={styles.inputOuter}>
-                      <TextInput
-                        placeholder="example@example.com"
-                        value={values.email}
-                        onChangeText={handleChange('email')}
-                        onBlur={() => setFieldTouched('email')}
-                        mode="flat"
-                        style={styles.input}
-                        theme={{
-                          colors: {
-                            background: 'transparent',
-                            text: '#28322e',
-                            placeholder: '#8dbba7',
-                          },
-                        }}
-                        underlineColor="transparent"
-                        placeholderTextColor="#8d9fbbff"
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                      />
-                    </View>
-                    {touched.email && errors.email && (
-                      <Text style={styles.errorText}>{errors.email}</Text>
-                    )}
+            <View style={[styles.container]}>
+              <Text style={styles.welcome}>Welcome</Text>
+              <View style={[styles.card, {backgroundColor:colors.background}]}>
+                <Formik
+                  initialValues={{ email: '', password: '' }}
+                  validationSchema={LoginSchema}
+                  onSubmit={async (values, { setSubmitting, setStatus }) => {
+                    try {
+                      setStatus('');
+                      const access_token = await loginUser(values.email, values.password);
+                      // navigation happens automatically with state change
+                      dispatch(setAuthenticated({accessToken: access_token,}));
+                      dispatch(getUserData(access_token));
+                      console.log('Login payload:', values.email);
+                      console.log('AUTH STATE:');
 
-                    {/* Password Field */}
-                    <Text style={styles.label}>Password</Text>
-                    <View style={styles.inputOuter}>
-                      <TextInput
-                        placeholder="••••••••"
-                        value={values.password}
-                        onChangeText={handleChange('password')}
-                        onBlur={() => setFieldTouched('password')}
-                        mode="flat"
-                        style={styles.input}
-                        secureTextEntry={!showPassword}
-                        theme={{
-                          colors: {
-                            background: 'transparent',
-                            text: '#28322e',
-                            placeholder: '#8dbba7',
-                          },
-                        }}
-                        placeholderTextColor="#8d9fbbff"
-                        underlineColor="transparent"
-                      />
-                      <TouchableOpacity
-                        style={styles.eyeButton}
-                        onPress={() => setShowPassword(!showPassword)}
+                    } catch (err) {
+                      console.log('Login error:', err);
+                      setStatus(err?.response?.data?.detail ||
+                            err?.message ||
+                            'Login failed');
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}>
+                  {({handleChange,handleSubmit,values,errors,touched,isSubmitting,status,setFieldTouched,}) => (
+                    <>
+                      {/* Email Field */}
+                      <Text style={[styles.label, {color:colors.text}]}>Email</Text>
+                      <View style={styles.inputOuter}>
+                        <TextInput
+                          placeholder="example@example.com"
+                          value={values.email}
+                          onChangeText={handleChange('email')}
+                          onBlur={() => setFieldTouched('email')}
+                          mode="flat"
+                          style={styles.input}
+                          theme={{
+                            colors: {
+                              background: 'transparent',
+                              text: '#28322e',
+                              placeholder: '#8dbba7',
+                            },
+                          }}
+                          underlineColor="transparent"
+                          placeholderTextColor="#8d9fbbff"
+                          autoCapitalize="none"
+                          keyboardType="email-address"
+                        />
+                      </View>
+                      {touched.email && errors.email && (
+                        <Text style={styles.errorText}>{errors.email}</Text>
+                      )}
+
+                      {/* Password Field */}
+                      <Text style={[styles.label, {color:colors.text}]}>Password</Text>
+                      <View style={styles.inputOuter}>
+                        <TextInput
+                          placeholder="••••••••"
+                          value={values.password}
+                          onChangeText={handleChange('password')}
+                          onBlur={() => setFieldTouched('password')}
+                          mode="flat"
+                          style={styles.input}
+                          secureTextEntry={!showPassword}
+                          theme={{
+                            colors: {
+                              background: 'transparent',
+                              text: '#28322e',
+                              placeholder: '#8dbba7',
+                            },
+                          }}
+                          placeholderTextColor="#8d9fbbff"
+                          underlineColor="transparent"
+                        />
+                        <TouchableOpacity
+                          style={styles.eyeButton}
+                          onPress={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <Feather name="eye" size={22} color="#8d9fbbff" />
+                          ) : (
+                            <Feather name="eye-off" size={22} color="#8d9fbbff" />
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                      {touched.password && errors.password && (
+                        <Text style={styles.errorText}>{errors.password}</Text>
+                      )}
+                      {status ? (
+                        <Text style={styles.errorText}>{status}</Text>
+                      ) : null}
+
+                      {/* Log In Button */}
+                      <Button
+                        mode="contained"
+                        onPress={handleSubmit}
+                        loading={isSubmitting}
+                        style={styles.loginBtn}
+                        labelStyle={styles.loginLabel}
+                        contentStyle={{ height: 50 }}
+                        uppercase={false}
                       >
-                        {showPassword ? (
-                          <Feather name="eye" size={22} color="#8d9fbbff" />
-                        ) : (
-                          <Feather name="eye-off" size={22} color="#8d9fbbff" />
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                    {touched.password && errors.password && (
-                      <Text style={styles.errorText}>{errors.password}</Text>
-                    )}
-                    {status ? (
-                      <Text style={styles.errorText}>{status}</Text>
-                    ) : null}
+                        Log In
+                      </Button>
 
-                    {/* Log In Button */}
-                    <Button
-                      mode="contained"
-                      onPress={handleSubmit}
-                      loading={isSubmitting}
-                      style={styles.loginBtn}
-                      labelStyle={styles.loginLabel}
-                      contentStyle={{ height: 50 }}
-                      uppercase={false}
-                    >
-                      Log In
-                    </Button>
-
-                    {/* Forgot Password */}
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate('ForgotPassword')}
-                    >
-                      <Text style={styles.forgot}>Forgot Password?</Text>
-                    </TouchableOpacity>
-
-                    {/* Sign Up Button */}
-                    <Button
-                      mode="contained"
-                      onPress={() => navigation.navigate('Register')}
-                      style={styles.signUpBtn}
-                      labelStyle={styles.signUpLabel}
-                      contentStyle={{ height: 50 }}
-                      uppercase={false}
-                    >
-                      Sign Up
-                    </Button>
-
-                    {/* Fingerprint Access */}
-                    {/* <Text style={styles.fingerprint}>
-                      Use <Text style={styles.fingerprintHighlight}>Fingerprint</Text> To Access
-                    </Text> */}
-
-                    {/* Social Login */}
-                    <Text style={styles.orSignUp}>or sign up with</Text>
-                    <View style={styles.socialRow}>
-                      <TouchableOpacity style={styles.socialButton}>
-                        <Image
-                          source={require('../../assets/facebook.png')}
-                          style={{
-                            width: 35,
-                            height: 35,
-                            resizeMode: 'contain',
-                          }}
-                        />
+                      {/* Forgot Password */}
+                      <TouchableOpacity
+                        onPress={() => navigation.navigate('ForgotPassword')}
+                      >
+                        <Text style={styles.forgot}>Forgot Password?</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.socialButton}>
-                        <Image
-                          source={require('../../assets/google.png')}
-                          style={{
-                            width: 22,
-                            height: 22,
-                            resizeMode: 'contain',
-                          }}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
-              </Formik>
+                      {/* Sign Up Button */}
+                      <Button
+                        mode="contained"
+                        onPress={() => navigation.navigate('Register')}
+                        style={styles.signUpBtn}
+                        labelStyle={styles.signUpLabel}
+                        contentStyle={{ height: 50 }}
+                        uppercase={false}
+                      >
+                        Sign Up
+                      </Button>
+
+                      {/* Fingerprint Access */}
+                      {/* <Text style={styles.fingerprint}>
+                        Use <Text style={styles.fingerprintHighlight}>Fingerprint</Text> To Access
+                      </Text> */}
+
+                      {/* Social Login */}
+                      <Text style={styles.orSignUp}>or sign up with</Text>
+                      <View style={styles.socialRow}>
+                        <TouchableOpacity style={styles.socialButton} onPress={() => GoogleSignin()}>
+                          <Image
+                            source={require('../../assets/google.png')}
+                            style={{
+                              width: 22,
+                              height: 22,
+                              resizeMode: 'contain',
+                            }}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
+                </Formik>
+              </View>
             </View>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -228,9 +224,9 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#eff6ffff',
   },
   bgTop: {
+    flex:1,
     backgroundColor: '#4981f9ff',
     position: 'absolute',
     top: 0,
@@ -251,24 +247,25 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffffff',
     textAlign: 'center',
-    marginTop: 65,
+    // marginTop: 50,
     marginBottom: 20,
     letterSpacing: 0.5,
   },
   card: {
-    backgroundColor: '#eff6ffff',
+    // backgroundColor: '#eff6ffff',
     borderTopLeftRadius: 46,
     borderTopRightRadius: 46,
     paddingVertical: 25,
     paddingHorizontal: 28,
-    // flex: 1,
+    flex: 1,
     marginTop: 50,
     zIndex: 2,
-    // shadowColor: '#000',
-    // shadowOpacity: 0.06,
-    // shadowRadius: 12,
-    // elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 6,
     alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   label: {
     color: '#3a4936',

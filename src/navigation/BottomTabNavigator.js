@@ -6,10 +6,12 @@ import BudgetScreen from '../screens/Budget/BudgetScreen';
 import SavingsGoalScreen from '../screens/Goals/SavingsGoalScreen';
 import InvestmentScreen from '../screens/Invest/InvestmentScreen';
 import { Colors, Fonts } from "../utils/theme";
+import { useTheme } from "../Theme/ThemeProvider";
 
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
+  const {colors} = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -33,14 +35,13 @@ const BottomTabNavigator = () => {
         tabBarActiveTintColor: Colors.primary, // your theme primary
         tabBarInactiveTintColor: "gray",
         tabBarLabelStyle: {
-          fontSize:12,
+          fontSize: 12,
           fontFamily: Fonts.primary,
         },
         tabBarStyle:{
-          backgroundColor: Colors.neutralBackground,
-          // position: 'absolute',
-          height: 55,
-        }
+          backgroundColor: colors.background,
+          borderTopWidth:0
+        },
 
       })}
     >

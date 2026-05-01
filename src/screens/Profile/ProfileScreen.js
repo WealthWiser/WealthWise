@@ -9,9 +9,11 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../../redux/slices/userSlice';
+import { logout } from '../../redux/slices/authSlice';
 import { setTransactions } from '../../redux/slices/transactionSlice';
 import { supabase } from '../../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -49,21 +51,21 @@ const ProfileScreen = ({ navigation }) => {
   );
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    // const fetchUserDetails = async () => {
+    //   const { data: { user } } = await supabase.auth.getUser();
+    //   if (!user) return;
 
-      if (user?.created_at) {
-        const date = new Date(user.created_at);
-        const formatted = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-        setMemberSince(formatted);
-      }
+    //   if (user?.created_at) {
+    //     const date = new Date(user.created_at);
+    //     const formatted = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+    //     setMemberSince(formatted);
+    //   }
 
-      const { data, error } = await supabase.from('users').select('*').eq('id', user.id).single();
-      if (!error) setProfile(data);
-    };
+    //   const { data, error } = await supabase.from('users').select('*').eq('id', user.id).single();
+    //   if (!error) setProfile(data);
+    // };
 
-    fetchUserDetails();
+    // fetchUserDetails();
   }, []);
 
   const handleFileSelection = async () => {
@@ -95,20 +97,22 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
-      dispatch(setUserData({ name: '', income: 0, riskProfile: 'medium' }));
-      dispatch(setTransactions([]));
-    }
+    dispatch(logout());
+    Alert.alert("Succesfully logged out")
+    // const { error } = await supabase.auth.signOut();
+    // if (!error) {
+    //   dispatch(setUserData({ name: '', income: 0, riskProfile: 'medium' }));
+    //   dispatch(setTransactions([]));
+    // }
   };
 
-  if (!profile) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', paddingVertical: 40 }}>
-        <ActivityIndicator size="large" color={'#10266F'} />
-      </View>
-    );
-  }
+  // if (!profile) {
+  //   return (
+  //     <View style={{ flex: 1, alignItems: 'center', paddingVertical: 40 }}>
+  //       <ActivityIndicator size="large" color={'#10266F'} />
+  //     </View>
+  //   );
+  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -173,7 +177,7 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         {/* Profile Header */}
-        {profile && (
+        {/* {profile && (
           <View style={styles.profileHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View>
@@ -194,10 +198,10 @@ const ProfileScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
-        )}
+        )} */}
 
         {/* Risk Analysis + Upload Transactions */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <TouchableOpacity style={styles.optionCard} onPress={() => navigation.navigate('RiskAnalysis')}>
             <View style={styles.optionRow}>
               <Feather name="bar-chart-2" size={22} color={Colors.grayDark} />
@@ -217,10 +221,10 @@ const ProfileScreen = ({ navigation }) => {
               onDismiss={() => setMessageData({ ...messageData, visible: false })}
             />
           )}
-        </View>
+        </View> */}
 
         {/* Support & Legal */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support & Legal</Text>
           <TouchableOpacity style={styles.optionCard}>
             <View style={styles.optionRow}>
@@ -246,7 +250,7 @@ const ProfileScreen = ({ navigation }) => {
               <Text style={styles.optionText}>Rate App</Text>
             </View>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Sign Out */}
         <View style={styles.footer}>

@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, Spacing, FontSizes, Fonts, FontWeights } from '../../utils/theme';
-
+import {useTheme}  from '../../Theme/ThemeProvider';
+import { SafeAreaView } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 
 const onboardingData = [
@@ -36,6 +37,7 @@ const OnboardingScreen = () => {
   const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
+  const { colors, spacing } = useTheme();
 
   // Animated values for dots
   const scales = useRef(onboardingData.map(() => new Animated.Value(1))).current;
@@ -79,7 +81,7 @@ const OnboardingScreen = () => {
   }).current;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, {backgroundColor:colors.background}]}>
       <Image
         source={require('../../assets/wwLogo.png')}
         style={styles.topLogo}
@@ -96,7 +98,7 @@ const OnboardingScreen = () => {
           <View style={styles.slide}>
             <Image source={item.image} style={styles.image} resizeMode="contain" />
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.text}>{item.description}</Text>
+            <Text style={[styles.text, {color:colors.text}]}>{item.description}</Text>
           </View>
         )}
         ref={flatListRef}
@@ -142,7 +144,7 @@ const OnboardingScreen = () => {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
